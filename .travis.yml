@@ -1,19 +1,38 @@
-language: python
+matrix:
+  include:
+    - language: python
+      python: 3.6
+      service:
+        - postgresql
+      before_install:
+        - cd service-analytics
+      install:
+        - pip install -r requirements.txt
+      before_script:
+        - export APP_SETTINGS="project.config.TestingConfig"
+        - export DATABASE_TEST_URL=postgresql://postgres:@localhost/analytics_test
+        - psql -c 'create database analytics_test;' -U postgres
+        - python manage.py recreate_db
+      script:
+        - python manage.py test
 
-python:
-  - "3.6"
+    - services: docker
+      sudo: required
+      env:
+        global:
+          - DOCKER_COMPOSE_VERSION=1.11.2
+      before_install:
+        - sudo rm /usr/local/bin/docker-compose
+        - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+        - chmod +x docker-compose
+        - sudo mv docker-compose /usr/local/bin
+      before_script:
+        - docker-compose up --build -d
+      script:
+        - docker-compose run users-service python manage.py test
+      after_script:
+        - docker-compose down
 
-service:
-  - postgresql
-
-install:
-  - cd service-analytics && pip install -r requirements.txt
-
-before_script:
-  - export APP_SETTINGS="project.config.TestingConfig"
-  - export DATABASE_TEST_URL=postgresql://postgres:@localhost/users_test
-  - psql -c 'create database users_test;' -U postgres
-  - cd service-analytics && python manage.py recreate_db
-
-script:
-  - cd service-analytics && python manage.py test
+notifications:
+  email:
+    - ole.bjorne@gmail.com
