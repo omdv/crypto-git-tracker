@@ -24,6 +24,7 @@ services:
       - APP_SETTINGS=project.config.DevelopmentConfig
       - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_dev
       - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
+      - SECRET_KEY=my_long_secure_key
     depends_on:
       database:
         condition: service_healthy
