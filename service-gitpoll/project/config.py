@@ -1,7 +1,7 @@
 # project/config.py
 
-
 import os
+import json
 
 
 class BaseConfig:
@@ -10,6 +10,7 @@ class BaseConfig:
     TESTING = False
     SECRET_KEY = 'my_precious'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    GIT_SECRET = json.load(open("project/gitsecret.key"))
 
 
 class DevelopmentConfig(BaseConfig):

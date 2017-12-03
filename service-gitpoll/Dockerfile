@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 ADD . /usr/src/app
 
 # run server
-CMD python manage.py start_poll -d 10
+CMD python -u manage.py start_poll -d 10

@@ -1,27 +1,21 @@
 # manage.py
 
-
-import time
 import unittest
 from flask_script import Manager
-from project import app
+from project import app, start_git_poll, stop_git_poll
 
 
 manager = Manager(app)
-polling = False
 
 
 @manager.option('-d', '--delay', help='Delay in seconds', dest="poll_delay")
 def start_poll(poll_delay):
-    polling = True
-    while polling:
-        print("polling")
-        time.sleep(int(poll_delay))
+    start_git_poll(poll_delay)
 
 
 @manager.command
 def stop_poll():
-    polling = False
+    stop_git_poll()
 
 
 @manager.command
