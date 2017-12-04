@@ -8,7 +8,7 @@ class BaseConfig:
     """Base configuration"""
     DEBUG = False
     TESTING = False
-    SECRET_KEY = 'my_precious'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     GIT_SECRET = json.load(open("project/gitsecret.key"))
 

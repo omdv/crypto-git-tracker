@@ -18,6 +18,8 @@ def create_app():
 
     # set up extensions
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
     # register blueprints
     from project.api.views import analytics_blueprint
