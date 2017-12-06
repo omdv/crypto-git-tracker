@@ -2,7 +2,6 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-
 # instantiate the db
 db = SQLAlchemy()
 
@@ -18,8 +17,6 @@ def create_app():
 
     # set up extensions
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
 
     # register blueprints
     from project.api.views import analytics_blueprint
