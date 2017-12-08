@@ -3,7 +3,6 @@
 # import os
 import json
 import time
-# import pandas as pd
 import datetime as dt
 
 from project import db
@@ -70,6 +69,24 @@ class TestAnalyticsService(BaseTestCase):
             self.assertIn('success', data['status'])
             self.assertIn('success', data['status'])
 
+    def test_initial_download(self):
+        with self.client:
+            for page_limit in [1, 2]:
+                response = self.client.post(
+                    '/initial_download',
+                    data=json.dumps(dict(test=True, page_limit=page_limit)),
+                    content_type='application/json',
+                )
+                data = json.loads(response.data.decode())
+                self.assertEqual(response.status_code, 201)
+                self.assertIn('Initial download...', data['message'])
+                self.assertIn('success', data['status'])
+                time.sleep(3)
+                response = self.client.get('/commits')
+                data = json.loads(response.data.decode())
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(len(data['data']['commits']), page_limit*100)
+
     def test_start_polling(self):
         with self.client:
             for page_limit in [1, 2]:
@@ -88,6 +105,13 @@ class TestAnalyticsService(BaseTestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(len(data['data']['commits']), page_limit*100)
 
+    def test_stop_polling(self):
+        with self.client:
+            response = self.client.post('/stop_poll')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 201)
+            self.assertIn('Polling was stopped!', data['message'])
+            self.assertIn('success', data['status'])
 
     # def test_polling(self):
     #     print("\n")

@@ -56,7 +56,7 @@ class TestTestingConfig(TestCase):
             json.load(open("/run/secrets/my_git_secret"))
         )
         self.assertTrue(
-            app.config['GIT_REPOS'] == ['bitcoin/bitcoin']
+            app.config['GIT_REPOS'] == {'BTC': ['bitcoin/bitcoin']}
         )
 
 
