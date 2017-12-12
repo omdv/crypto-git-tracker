@@ -32,6 +32,19 @@ services:
     secrets:
      - my_git_secret
 
+  # client:
+  #   container_name: client
+  #   build: ./service-client
+  #   ports:
+  #     - '3007:3000' # expose ports - HOST:CONTAINER
+  #   environment:
+  #     - NODE_ENV=development
+  #     - REACT_APP_SERVICE_URL=${REACT_APP_USERS_SERVICE_URL}
+  #   depends_on:
+  #     - analytics
+  #   links:
+  #     - analytics
+
 secrets:
   my_git_secret:
     file: ./gitsecret.key

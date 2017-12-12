@@ -4,12 +4,13 @@ import time
 
 import pandas as pd
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response, make_response
 from flask import current_app as app
 
 from project import db
 from project.api.models import Commit
 from project.api.git_watcher import GitWatcher
+from project.api.git_analytics import GitAnalytics
 
 from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy import create_engine
@@ -124,3 +125,21 @@ def get_git_rate_limit():
         }
     }
     return jsonify(response_object), 200
+
+
+@analytics_blueprint.route('/daily_commits', methods=['GET'])
+def get_daily_commits():
+
+    # analytics = GitAnalytics(app.config)
+    # _ = analytics.daily_commits_moving_average()
+
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    df = pd.read_sql('daily_commits', engine).fillna(0)
+
+    resp = Response(
+        response=df.to_json(orient='records'),
+        status=200,
+        mimetype="application/json")
+
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp

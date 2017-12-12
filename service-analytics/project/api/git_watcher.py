@@ -79,12 +79,20 @@ class GitWatcher():
             last_page_num = 1
         return (end, next_url, next_page_num, last_modified, last_page_num)
 
+    def _get_repo_creation_date(self, repo):
+        url = "https://api.github.com/orgs/"+repo.split("/")[0]+"/repos"
+        response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN)).json()
+        for r in response:
+            if r["full_name"] == repo:
+                created_at = r["created_at"]
+        return created_at
+
     def _initial_download_single_repo(self, repo, coin, endpoint,
                                       since=dt.datetime(2000, 1, 1)):
         # first request
         url = "https://api.github.com/repos/" +\
             repo + self.endpoints[endpoint] +\
-            "&since=" + since.strftime('%Y-%m-%dT%H:%M:%SZ')
+            "&since=" + self._get_repo_creation_date(repo)
         response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN))
         df = pd.DataFrame(response.json())
         last_page, next_url, next_page_num, last_modified, last_page_num =\
