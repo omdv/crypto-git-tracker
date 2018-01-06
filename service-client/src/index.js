@@ -18,11 +18,13 @@ class App extends Component {
   }
   
   componentDidMount() {
-    this.getUsers();
+    this.getDailyCommits();
   }
   
-  getUsers() {
-    axios.get(`${process.env.REACT_APP_USERS_SERVICE_URL}/daily_commits`)
+  getDailyCommits() {
+    console.log(process.env.GIT_SERVICE_URL)
+    console.log(process.env)
+    axios.get(`$process.env.GIT_SERVICE_URL}/daily_commits`)
     .then((res) => {
       // process data
       let data = res.data

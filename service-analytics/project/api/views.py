@@ -64,7 +64,7 @@ def post_initial_download():
             executor.submit(watcher.initial_download)
     # NON TEST CASE
     else:
-        watcher.set_page_limit(1000)
+        watcher.set_page_limit(3)
         executor.submit(watcher.initial_download)
 
     response_object = {
@@ -135,6 +135,23 @@ def get_daily_commits():
 
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     df = pd.read_sql('daily_commits', engine).fillna(0)
+
+    resp = Response(
+        response=df.to_json(orient='records'),
+        status=200,
+        mimetype="application/json")
+
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
+
+
+@analytics_blueprint.route('/summary_table', methods=['GET'])
+def get_summary_table():
+    analytics = GitAnalytics(app.config)
+    _ = analytics.summary_table()
+
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    df = pd.read_sql('summary_table', engine).fillna(0)
 
     resp = Response(
         response=df.to_json(orient='records'),

@@ -220,3 +220,4 @@ if __name__ == '__main__':
     app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_dev'
     watcher = GitWatcher()
     watcher.set_app_config(app_config)
+    df = watcher.initial_download()

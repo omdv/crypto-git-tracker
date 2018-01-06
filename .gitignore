@@ -2,3 +2,4 @@ env
 htmlcov
 __pycache__
 *.key
+.ipynb_checkpoints

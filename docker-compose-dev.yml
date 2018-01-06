@@ -4,7 +4,9 @@ services:
 
   database:
     container_name: database
-    build: ./service-db
+    build:
+      context: ./service-db
+      dockerfile: Dockerfile
     ports:
         - 5435:5432  # expose ports - HOST:CONTAINER
     environment:
@@ -15,7 +17,9 @@ services:
 
   analytics:
     container_name: analytics
-    build: ./service-analytics/
+    build:
+      context: ./service-analytics/
+      dockerfile: Dockerfile-dev
     volumes:
       - './service-analytics:/usr/src/app'
     ports:
@@ -32,18 +36,30 @@ services:
     secrets:
      - my_git_secret
 
-  # client:
-  #   container_name: client
-  #   build: ./service-client
-  #   ports:
-  #     - '3007:3000' # expose ports - HOST:CONTAINER
-  #   environment:
-  #     - NODE_ENV=development
-  #     - REACT_APP_SERVICE_URL=${REACT_APP_USERS_SERVICE_URL}
-  #   depends_on:
-  #     - analytics
-  #   links:
-  #     - analytics
+  client:
+    container_name: client
+    build: ./service-client
+    ports:
+      - '3007:3000' # expose ports - HOST:CONTAINER
+    environment:
+      - NODE_ENV=development
+      - GIT_SERVICE_URL=http://127.0.0.1
+    depends_on:
+      - analytics
+    links:
+      - analytics
+
+  nginx:
+    container_name: nginx
+    build: ./service-nginx/
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - analytics
+      - client
+    links:
+      - analytics
 
 secrets:
   my_git_secret:
