@@ -47,8 +47,6 @@ class TimeSeriesChart extends Component {
     const selDate = this.xScale.invert(point.x)
     const dataIdx = bisectDate(data, selDate)
 
-    console.log(point.x, dataIdx)
-
     // get x and y within try block
     try {
       xReadings = data[dataIdx].date

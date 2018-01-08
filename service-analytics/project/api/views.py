@@ -129,9 +129,8 @@ def get_git_rate_limit():
 
 @analytics_blueprint.route('/daily_commits', methods=['GET'])
 def get_daily_commits():
-
-    # analytics = GitAnalytics(app.config)
-    # _ = analytics.daily_commits_moving_average()
+    analytics = GitAnalytics(app.config)
+    _ = analytics.daily_commits_moving_average()
 
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     df = pd.read_sql('daily_commits', engine).fillna(0)
@@ -151,7 +150,7 @@ def get_summary_table():
     _ = analytics.summary_table()
 
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('summary_table', engine).fillna(0)
+    df = pd.read_sql('summary_table', engine)
 
     resp = Response(
         response=df.to_json(orient='records'),

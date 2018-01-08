@@ -36,19 +36,6 @@ services:
     secrets:
      - my_git_secret
 
-  client:
-    container_name: client
-    build: ./service-client
-    ports:
-      - '3007:3000' # expose ports - HOST:CONTAINER
-    environment:
-      - NODE_ENV=production
-      - GIT_SERVICE_URL=http://127.0.0.1
-    depends_on:
-      - analytics
-    links:
-      - analytics
-
   nginx:
     container_name: nginx
     build: ./nginx/

@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.3'
 
 services:
 
@@ -29,6 +29,8 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_dev
       - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
       - SECRET_KEY=my_long_secure_key
+      - GIT_TOKEN=${GIT_TOKEN}
+      - GIT_USER=omdv
     depends_on:
       - database
     links:
@@ -38,12 +40,16 @@ services:
 
   client:
     container_name: client
-    build: ./service-client
+    build:
+      context: ./service-client
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './service-client:/usr/src/app'
     ports:
       - '3007:3000' # expose ports - HOST:CONTAINER
     environment:
       - NODE_ENV=development
-      - GIT_SERVICE_URL=http://127.0.0.1
+      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
     depends_on:
       - analytics
     links:

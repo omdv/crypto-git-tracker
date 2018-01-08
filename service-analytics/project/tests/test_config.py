@@ -24,11 +24,7 @@ class TestDevelopmentConfig(TestCase):
             app.config['SQLALCHEMY_DATABASE_URI'] ==
             os.environ.get('DATABASE_URL')
         )
-        # self.assertTrue(
-        #     app.config['GIT_SECRET'] ==
-        #     json.load(open("/run/secrets/my_git_secret"))
-        # )
-        for key in ['SECRET_KEY']:
+        for key in ['GIT_TOKEN', 'GIT_USER']:
             self.assertTrue(
                 app.config[key] ==
                 os.environ.get(key))
@@ -40,7 +36,7 @@ class TestTestingConfig(TestCase):
         return app
 
     def test_app_is_testing(self):
-        for key in ['SECRET_KEY']:
+        for key in ['GIT_TOKEN', 'GIT_USER']:
             self.assertTrue(
                 app.config[key] ==
                 os.environ.get(key))
@@ -51,10 +47,6 @@ class TestTestingConfig(TestCase):
             app.config['SQLALCHEMY_DATABASE_URI'] ==
             os.environ.get('DATABASE_TEST_URL')
         )
-        # self.assertTrue(
-        #     app.config['GIT_SECRET'] ==
-        #     json.load(open("/run/secrets/my_git_secret"))
-        # )
         self.assertTrue(
             app.config['GIT_REPOS'] == {'BTC': ['bitcoin/bitcoin']}
         )
@@ -66,16 +58,12 @@ class TestProductionConfig(TestCase):
         return app
 
     def test_app_is_production(self):
-        for key in ['SECRET_KEY']:
+        for key in ['GIT_TOKEN', 'GIT_USER']:
             self.assertTrue(
                 app.config[key] ==
                 os.environ.get(key))
         self.assertFalse(app.config['DEBUG'])
         self.assertFalse(app.config['TESTING'])
-        # self.assertTrue(
-        #     app.config['GIT_SECRET'] ==
-        #     json.load(open("/run/secrets/my_git_secret"))
-        # )
 
 
 if __name__ == '__main__':

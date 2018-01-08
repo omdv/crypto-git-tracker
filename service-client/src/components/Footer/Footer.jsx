@@ -4,8 +4,7 @@ import './Footer.css'
 export default () =>
   <footer className="Footer">
     <p>
-      Created by Kacper -{' '}
-      <a href="https://twitter.com/caspg_">Twitter</a> -{' '}
-      <a href="https://github.com/caspg">GitHub</a>
+      Created by omdv -{' '}
+      <a href="https://github.com/omdv">GitHub</a>
     </p>
   </footer>

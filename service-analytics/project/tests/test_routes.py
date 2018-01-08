@@ -88,15 +88,19 @@ class TestAnalyticsService(BaseTestCase):
             self.assertIn('Polling was stopped!', data['message'])
             self.assertIn('success', data['status'])
 
-    # def test_results_daily_commits(self):
-    #     with self.client:
-    #         self.client.post(
-    #                 '/initial_download',
-    #                 data=json.dumps(dict(test=True, page_limit=5)),
-    #                 content_type='application/json',
-    #             )
-    #         time.sleep(3)
-    #         response = self.client.get('/daily_commits')
-    #         data = json.loads(response.data.decode())
-    #         self.assertEqual(response.status_code, 200)
-    #         self.assertTrue(len(data['data']['daily_commits']) > 1)
+    def test_analytics(self):
+        with self.client:
+            self.client.post(
+                    '/initial_download',
+                    data=json.dumps(dict(test=True, page_limit=1)),
+                    content_type='application/json')
+            time.sleep(3)
+            response = self.client.get('/daily_commits')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(len(data) > 1)
+
+            response = self.client.get('/summary_table')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(len(data) == 1)

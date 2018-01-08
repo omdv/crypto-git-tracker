@@ -19,8 +19,8 @@ class GitWatcher():
 
     def set_app_config(self, app_config):
         self.repos = app_config['GIT_REPOS']
-        self.USER = app_config['GIT_SECRET']['USER']
-        self.TOKEN = app_config['GIT_SECRET']['TOKEN']
+        self.USER = app_config['GIT_USER']
+        self.TOKEN = app_config['GIT_TOKEN']
         self.DB_URI = app_config['SQLALCHEMY_DATABASE_URI']
 
         # initialize dictionaries for tracking incremental downloads
