@@ -16,7 +16,7 @@ RUN pip install -r requirements.txt
 # add app
 ADD . /usr/src/app
 
-# force celery to accept root inside docker
+# needs to be set else Celery gives an error (because docker runs commands inside container as root)
 ENV C_FORCE_ROOT=1
 
 # run supervisord

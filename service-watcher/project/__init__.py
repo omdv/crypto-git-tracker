@@ -1,11 +1,8 @@
 import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from celery import Celery
-
-# instantiate the db
-db = SQLAlchemy()
+from datetime import timedelta
 
 
 # Flask app factory
@@ -20,23 +17,35 @@ def create_app():
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
 
-    # set up extensions
-    db.init_app(app)
-
     # register blueprints
-    from project.api.db_endpoints import db_blueprint
-    app.register_blueprint(db_blueprint)
+    from project.api.routes import celery_routes
+    app.register_blueprint(celery_routes)
 
-    # register celery app
+    from project.api.routes_2 import celery_routes_2
+    app.register_blueprint(celery_routes_2)
+
+    app.config['CELERY_BACKEND_URL'] = "redis://redis:6379/0"
+    app.config['CELERY_BROKER_URL'] = "redis://redis:6379/0"
+
+    app.config['CELERYBEAT_SCHEDULE'] = {
+        'say-every-5-seconds': {
+            'task': 'return_something',
+            'schedule': timedelta(seconds=5)
+        },
+        'say-every-10-seconds': {
+            'task': 'return_something_2',
+            'schedule': timedelta(seconds=10)
+        },
+    }
+    app.config['CELERY_TIMEZONE'] = 'UTC'
+
     celery = Celery(
         app.import_name,
-        include=['project.tasks.summary', 'project.tasks.watcher'],
         broker=app.config['CELERY_BROKER_URL'],
         backend=app.config['CELERY_BACKEND_URL'])
     celery.conf.update(app.config)
     TaskBase = celery.Task
 
-    # define celery task with app_context
     class ContextTask(TaskBase):
         abstract = True
 

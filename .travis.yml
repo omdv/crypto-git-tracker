@@ -11,6 +11,8 @@ matrix:
       before_script:
         - export APP_SETTINGS="project.config.TestingConfig"
         - export DATABASE_TEST_URL=postgresql://postgres:@localhost/analytics_test
+        - export GIT_USER=omdv
+        - export GIT_TOKEN=
         - psql -c 'create database analytics_test;' -U postgres
         - python manage.py recreate_db
       script:

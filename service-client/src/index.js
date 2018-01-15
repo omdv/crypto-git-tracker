@@ -19,12 +19,27 @@ class App extends Component {
       summary_table_loading: true,
     }
   }
+
+  getCommits() {
+    axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/daily_commits`)
+  }
+
+  getSummary() {
+    axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/summary_table`)
+  }
+
+  getDevs() {
+    axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/daily_devs`)
+  }
   
   componentDidMount() {
     // this.getCommits()
     this.getSummaryTable()
   }
   
+
+
+
   getCommits() {
     axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/daily_commits`)
     .then((res) => {

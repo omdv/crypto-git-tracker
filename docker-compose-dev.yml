@@ -23,7 +23,8 @@ services:
     volumes:
       - './service-analytics:/usr/src/app'
     ports:
-      - 5001:5000 # expose ports - HOST:CONTAINER
+      - 5001:5000
+      - 5555:5555
     environment:
       - APP_SETTINGS=project.config.DevelopmentConfig
       - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_dev
@@ -33,39 +34,47 @@ services:
       - GIT_USER=omdv
     depends_on:
       - database
+      - redis
     links:
+      - redis
       - database
     secrets:
      - my_git_secret
 
-  client:
-    container_name: client
-    build:
-      context: ./service-client
-      dockerfile: Dockerfile-dev
-    volumes:
-      - './service-client:/usr/src/app'
-    ports:
-      - '3007:3000' # expose ports - HOST:CONTAINER
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
-    depends_on:
-      - analytics
-    links:
-      - analytics
+  # client:
+  #   container_name: client
+  #   build:
+  #     context: ./service-client
+  #     dockerfile: Dockerfile-dev
+  #   volumes:
+  #     - './service-client:/usr/src/app'
+  #   ports:
+  #     - '3007:3000' # expose ports - HOST:CONTAINER
+  #   environment:
+  #     - NODE_ENV=development
+  #     - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
+  #   depends_on:
+  #     - analytics
+  #   links:
+  #     - analytics
 
-  nginx:
-    container_name: nginx
-    build: ./service-nginx/
-    restart: always
+  # nginx:
+  #   container_name: nginx
+  #   build: ./service-nginx/
+  #   restart: always
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - analytics
+  #     - client
+  #   links:
+  #     - analytics
+
+  redis:
+    container_name: redis
+    image: redis:latest
     ports:
-      - 80:80
-    depends_on:
-      - analytics
-      - client
-    links:
-      - analytics
+      - 6379:6379
 
 secrets:
   my_git_secret:

@@ -5,18 +5,23 @@ import pandas as pd
 import datetime as dt
 from requests.auth import HTTPBasicAuth
 from functools import reduce
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, exc
+
+# define constants - TODO move to environment
+POLL_DELAY = 1800
 
 
-class GitWatcher():
-    def __init__(self):
-        self.endpoints = {
-            'commits': '/commits?per_page=100'
-        }
+class GitCrawler():
+    def __init__(self, endpoint, repo):
+        self.endpoint = endpoint
+        self.repo = repo
         self.polling = False
-        self.poll_delay = 1800
+        self.poll_delay = POLL_DELAY
         self.page_limit = 1
 
+    """
+    Separate method to pass config after instantiation of Flask app
+    """
     def set_app_config(self, app_config):
         self.repos = app_config['GIT_REPOS']
         self.USER = app_config['GIT_USER']
@@ -36,6 +41,9 @@ class GitWatcher():
                 self.last_modified[repo] = last_modified
                 self.last_page[repo] = last_page
 
+    """
+    Aux method to get the rate limit
+    """
     def get_rate_limit(self):
         url = "https://api.github.com/rate_limit"
         response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN))
@@ -50,9 +58,18 @@ class GitWatcher():
     def _datetime_from_string(self, last_modified):
         return dt.datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
 
+    """
+    Parse response header.
+    Older records are at higher pages
+    Returns:
+    - end: whether this is the last page
+    - next_url: if there is a next_url
+    - next_page_num
+    - last_page_num
+    """
     def _parse_header(self, response):
         last_modified = response.headers['Last-Modified']
-        # if less than 100 items
+        # if less than 100 items there is no 'Link' in response headers
         if 'Link' in response.headers:
             pages = response.headers['Link'].split(", ")
             next_page = [s for s in pages if 'rel="next"' in s]
@@ -79,6 +96,67 @@ class GitWatcher():
             last_page_num = 1
         return (end, next_url, next_page_num, last_modified, last_page_num)
 
+    """
+    Read a table consisting of information re download status for
+    particular endpoint
+    """
+    def _read_endpoint_download_status(self, endpoint):
+        # try to get information about the status of this particular endpoint
+        engine = create_engine(self.DB_URI)
+        query = 'SELECT * FROM "{}_download_status"'.format(endpoint)
+        try:
+            _sql = engine.execute(query)
+            _sql = [dict(r) for r in _sql]
+        except exc.ProgrammingError:
+            _sql = []
+        return _sql
+
+    """
+    Download endpoint for a list of repos, starting from oldest records
+    """
+    def _new_commits_downloader(self, repos):
+        # try to get information about the status of this particular endpoint
+        endpoint = 'commits'
+        states = self._read_endpoint_download_status(endpoint)
+
+        for coin, repo in repos.items():
+            # first see if coin was ever parsed
+            try:
+                last_mod = list(filter(lambda _: _['coin'] == coin, states))[0]['last_modified']
+            except IndexError:
+                last_mod = self._get_repo_creation_date(repo)
+
+            # now fetch all pages
+            # first request
+            url = "https://api.github.com/repos/" +\
+                repo + self.endpoints[endpoint] +\
+                "&since=" + last_mod
+
+            # parse response and header
+            response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN))
+            df = pd.DataFrame(response.json())
+            last_page, next_url, next_page_num, last_modified, last_page_num =\
+                self._parse_header(response)
+
+            while (not last_page):
+                response = requests.get(next_url, auth=HTTPBasicAuth(self.USER, self.TOKEN))
+                last_page, next_url, next_page_num, last_modified, last_page_num =\
+                    self._parse_header(response)
+                df = pd.concat([df, pd.DataFrame(response.json())])
+
+            # update trackers for given repo and endpoint
+            self.last_modified[repo][endpoint] = last_modified
+            self.last_page[repo][endpoint] = last_page_num
+
+            # add identification columns
+            df['repo'] = repo
+            df['coin'] = coin
+        return df
+
+
+    """
+    Get creation date of the repo as a starting point for record download
+    """
     def _get_repo_creation_date(self, repo):
         url = "https://api.github.com/orgs/"+repo.split("/")[0]+"/repos"
         response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN)).json()
@@ -216,8 +294,9 @@ class GitWatcher():
 if __name__ == '__main__':
     app_config = {}
     app_config['GIT_REPOS'] = {'BTC': ['bitcoin/bitcoin'], 'ETH': ['ethereum/go-ethereum']}
-    app_config['GIT_SECRET'] = {'USER': 'omdv', 'TOKEN': 'bdbae9884072bba932f755ee370fd85f001a2928'}
-    app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_dev'
+    app_config['GIT_USER'] = 'omdv'
+    app_config['GIT_TOKEN'] = 'bdbae9884072bba932f755ee370fd85f001a2928'
+    app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_test'
     watcher = GitWatcher()
     watcher.set_app_config(app_config)
-    df = watcher.initial_download()
+    # df = watcher.initial_download()

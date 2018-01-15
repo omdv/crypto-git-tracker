@@ -106,6 +106,9 @@ class GitAnalytics():
         result.to_sql(
             'summary_table', engine, index=False, if_exists='replace')
 
+        unique_devs_ma.to_sql(
+            'daily_devs', engine, index=False, if_exists='replace')
+
         return result, unique_devs_ma
 
 
@@ -114,5 +117,4 @@ if __name__ == '__main__':
     app_config['SQLALCHEMY_DATABASE_URI'] =\
         'postgres://postgres:postgres@localhost:5435/analytics_dev'
     analytics = GitAnalytics(app_config)
-    # df = analytics.daily_commits_moving_average()
     d1, d2 = analytics.summary_table()

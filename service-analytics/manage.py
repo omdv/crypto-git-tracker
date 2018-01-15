@@ -16,7 +16,7 @@ COV = coverage.coverage(
 COV.start()
 
 
-app = create_app()
+app, cel = create_app()
 manager = Manager(app)
 
 

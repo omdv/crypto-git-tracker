@@ -2,6 +2,7 @@
 
 import os
 import json
+from datetime import timedelta
 
 
 class BaseConfig:
@@ -20,6 +21,21 @@ class BaseConfig:
         'ADA': ['input-output-hk/cardano-sl']}
     GIT_USER = os.environ.get('GIT_USER')
     GIT_TOKEN = os.environ.get('GIT_TOKEN')
+
+    CELERY_BROKER_URL = 'redis://redis:6379/0'
+    CELERY_BACKEND_URL = 'redis://redis:6379/0'
+    CELERY_TIMEZONE = 'UTC'
+    CELERYBEAT_SCHEDULE = {
+        'say-every-5-seconds': {
+            'task': 'test_watcher',
+            'schedule': timedelta(seconds=5)
+        },
+        'say-every-10-seconds': {
+            'task': 'test_summary',
+            'schedule': timedelta(seconds=10)
+        },
+    }
+
 
 
 class DevelopmentConfig(BaseConfig):
