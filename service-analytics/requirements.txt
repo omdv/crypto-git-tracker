@@ -1,5 +1,6 @@
 click==6.7
 celery==4.1.0
+celery-once==1.2.0
 redis==2.10.6
 coverage==4.4.1
 Flask==0.12.2

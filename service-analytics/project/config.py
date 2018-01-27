@@ -25,23 +25,29 @@ class BaseConfig:
     CELERY_BROKER_URL = 'redis://redis:6379/0'
     CELERY_BACKEND_URL = 'redis://redis:6379/0'
     CELERY_TIMEZONE = 'UTC'
-    CELERYBEAT_SCHEDULE = {
-        'say-every-5-seconds': {
-            'task': 'test_watcher',
-            'schedule': timedelta(seconds=5)
-        },
-        'say-every-10-seconds': {
-            'task': 'test_summary',
-            'schedule': timedelta(seconds=10)
-        },
+    ONCE = {
+        'backend': 'celery_once.backends.Redis',
+        'settings': {
+            'url': 'redis://redis:6379/0',
+            'default_timeout': 60 * 60
+        }
     }
-
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=120)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=600)
+        },
+    }
 
 
 class TestingConfig(BaseConfig):
@@ -49,10 +55,25 @@ class TestingConfig(BaseConfig):
     DEBUG = True
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_TEST_URL')
-    GIT_REPOS = {'BTC': ['bitcoin/bitcoin']}
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=5)
+        }
+    }
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=600)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=600)
+        },
+    }

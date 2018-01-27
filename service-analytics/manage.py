@@ -3,7 +3,8 @@ import coverage
 import datetime as dt
 from flask_script import Manager
 from project import create_app, db
-from project.api.models import Commit
+from project.api.models import RepoControlRecord
+from project.analytics.git_watcher import GitWatcher
 from project.tests.custom_test_runner import TimeLoggingTestResult
 
 COV = coverage.coverage(
@@ -54,12 +55,19 @@ def recreate_db():
     db.session.commit()
 
 
-@manager.command
-def seed_db():
+@manager.option('-r', '--repo', help='coin:repo_url')
+def add_repo_url(repo):
     """Seeds the database."""
-    db.session.add(Commit(author='michael', message="Test #1", type="doc", date=dt.datetime.today()))
-    db.session.add(Commit(author='bob', message="Test #2", type="algo", date=dt.datetime.today()))
+    coin, repo = repo.split(':')
+    db.session.add(RepoControlRecord(coin=coin, url=repo))
     db.session.commit()
+
+
+@manager.command
+def rate_limit():
+    watcher = GitWatcher(None, None, dt.datetime(2000, 1, 1))
+    watcher.set_app_config(app.config)
+    print(watcher.get_rate_limit())
 
 
 if __name__ == '__main__':

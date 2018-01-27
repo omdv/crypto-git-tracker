@@ -2,16 +2,38 @@
 
 
 from project import db
+import datetime as dt
+
+INIT_LAST_UPDATE = dt.datetime(2000, 1, 1)
 
 
 class Commit(db.Model):
     __tablename__ = "commits"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    author = db.Column(db.String(128), nullable=False)
-    message = db.Column(db.String(128), nullable=False)
+    login = db.Column(db.String(128), nullable=True)
+    message = db.Column(db.Text, nullable=True)
     date = db.Column(db.DateTime, nullable=False)
+    repo = db.Column(db.String(128), nullable=False)
+    coin = db.Column(db.String(128), nullable=False)
+    url = db.Column(db.String(256), nullable=False)
 
-    def __init__(self, author, message, date):
-        self.author = author
+    def __init__(self, login, message, date, repo, coin, url):
+        self.login = login
         self.message = message
         self.date = date
+        self.repo = repo
+        self.coin = coin
+        self.url = url
+
+
+class RepoControlRecord(db.Model):
+    __tablename__ = "control_repos"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    coin = db.Column(db.String(128), nullable=False)
+    url = db.Column(db.String(128), nullable=False)
+    last_update = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, coin, url):
+        self.coin = coin
+        self.url = url
+        self.last_update = INIT_LAST_UPDATE

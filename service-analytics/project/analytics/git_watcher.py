@@ -1,5 +1,4 @@
 import requests
-import time
 import re
 import pandas as pd
 import datetime as dt
@@ -7,40 +6,25 @@ from requests.auth import HTTPBasicAuth
 from functools import reduce
 from sqlalchemy import create_engine, inspect, exc
 
-# define constants - TODO move to environment
-POLL_DELAY = 1800
+"""
+    Get all commits for given repo since last_update time
+"""
 
 
 class GitWatcher():
-    def __init__(self):
-        self.endpoints = {
-            'commits': '/commits?per_page=100'
-        }
-        self.polling = False
-        self.poll_delay = POLL_DELAY
-        self.page_limit = 1
+    def __init__(self, coin, repo, last_update):
+        self.coin = coin
+        self.repo = repo
+        self.last_update = self._string_from_datetime(last_update)
+        self.endpoint = '/commits?per_page=100'
 
     """
     Separate method to pass config after instantiation of Flask app
     """
     def set_app_config(self, app_config):
-        self.repos = app_config['GIT_REPOS']
         self.USER = app_config['GIT_USER']
         self.TOKEN = app_config['GIT_TOKEN']
         self.DB_URI = app_config['SQLALCHEMY_DATABASE_URI']
-
-        # initialize dictionaries for tracking incremental downloads
-        self.last_modified = {}
-        self.last_page = {}
-        for repos in self.repos.values():
-            for repo in repos:
-                last_modified = {}
-                last_page = {}
-                for endpoint in self.endpoints:
-                    last_modified[endpoint] = 0
-                    last_page[endpoint] = 0
-                self.last_modified[repo] = last_modified
-                self.last_page[repo] = last_page
 
     """
     Aux method to get the rate limit
@@ -53,11 +37,11 @@ class GitWatcher():
     def set_page_limit(self, page_limit):
         self.page_limit = page_limit
 
-    def set_polling(self, polling):
-        self.polling = polling
+    def _datetime_from_string(self, last_update):
+        return dt.datetime.strptime(last_update, "%a, %d %b %Y %H:%M:%S %Z")
 
-    def _datetime_from_string(self, last_modified):
-        return dt.datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+    def _string_from_datetime(self, last_update):
+        return last_update.strftime("%a, %d %b %Y %H:%M:%S%Z") + ' GMT'
 
     """
     Parse response header.
@@ -97,20 +81,89 @@ class GitWatcher():
             last_page_num = 1
         return (end, next_url, next_page_num, last_modified, last_page_num)
 
+    def _download_page(self, pagenum):
+        url = "https://api.github.com/repos/" + self.repo + self.endpoint
+        url = url + '&page={}'.format(pagenum)
+
+        response = requests.get(
+            url,
+            auth=HTTPBasicAuth(self.USER, self.TOKEN),
+            headers={'If-Modified-Since': self.last_update})
+
+        return pd.DataFrame(response.json()), response
+
+    def _single_repo(self):
+        url = "https://api.github.com/repos/" + self.repo + self.endpoint
+
+        # first request
+        response = requests.get(
+            url,
+            auth=HTTPBasicAuth(self.USER, self.TOKEN),
+            headers={'If-Modified-Since': self.last_update})
+
+        if response.status_code != 304:
+            response_dataframes = []
+
+            # download last page
+            _, _, _, _, last_page_num =\
+                self._parse_header(response)
+
+            while last_page_num > 0:
+                df, response = self._download_page(last_page_num)
+                response_dataframes.append(df)
+                _, _, _, last_modified, _ = self._parse_header(response)
+                last_page_num -= 1
+
+            # prepare the dataframe
+            df = reduce(lambda x, y: pd.concat([x, y]), response_dataframes)
+            df.reset_index(inplace=True)
+            df['repo'] = self.repo
+            df['coin'] = self.coin
+            df = self._process_commits(df)
+
+            # export to DB
+            engine = create_engine(self.DB_URI)
+            df.to_sql(name='commits', con=engine, index=False, if_exists="append")
+
+        else:
+            last_modified = None
+
+        return last_modified
+
+    def _process_commits(self, df):
+        commits = df['commit'].apply(pd.Series)
+        commits.columns = ['commit_' + s for s in commits.columns]
+        df = pd.concat([df.drop(['commit'], axis=1), commits], axis=1)
+
+        date = df['commit_author'].apply(pd.Series)['date'].apply(pd.to_datetime)
+        df = pd.concat([df, date], axis=1)
+
+        login = df['author'].apply(pd.Series)['login']
+        df = pd.concat([df, login], axis=1)
+
+        # choose what to export
+        df = df[['login', 'commit_message', 'date', 'repo', 'coin', 'url']]
+        df.rename(columns={'commit_message': 'message'}, inplace=True)
+
+        return df
+
+    def download(self):
+        return self._single_repo()
+
     """
     Read a table consisting of information re download status for
     particular endpoint
     """
-    def _read_endpoint_download_status(self, endpoint):
-        # try to get information about the status of this particular endpoint
-        engine = create_engine(self.DB_URI)
-        query = 'SELECT * FROM "{}_download_status"'.format(endpoint)
-        try:
-            _sql = engine.execute(query)
-            _sql = [dict(r) for r in _sql]
-        except exc.ProgrammingError:
-            _sql = []
-        return _sql
+    # def _read_endpoint_download_status(self, endpoint):
+    #     # try to get information about the status of this particular endpoint
+    #     engine = create_engine(self.DB_URI)
+    #     query = 'SELECT * FROM "{}_download_status"'.format(endpoint)
+    #     try:
+    #         _sql = engine.execute(query)
+    #         _sql = [dict(r) for r in _sql]
+    #     except exc.ProgrammingError:
+    #         _sql = []
+    #     return _sql
 
     """
     Download endpoint for a list of repos, starting from oldest records
@@ -159,7 +212,7 @@ class GitWatcher():
     Get creation date of the repo as a starting point for record download
     """
     def _get_repo_creation_date(self, repo):
-        url = "https://api.github.com/orgs/"+repo.split("/")[0]+"/repos"
+        url = "https://api.github.com/orgs/" + repo.split("/")[0] + "/repos"
         response = requests.get(url, auth=HTTPBasicAuth(self.USER, self.TOKEN)).json()
         for r in response:
             if r["full_name"] == repo:
@@ -192,39 +245,21 @@ class GitWatcher():
         df['coin'] = coin
         return df
 
-    def _incremental_single_repo(self, repo, coin, endpoint):
-        # first request - check if updated
-        url = "https://api.github.com/repos/"+repo+self.endpoints[endpoint]
-        response = requests.get(
-            url,
-            auth=HTTPBasicAuth(self.USER, self.TOKEN),
-            headers={'If-Modified-Since': self.last_modified[repo][endpoint]})
+    # def _incremental_single_repo(self, repo, coin, endpoint):
+    #     # first request - check if updated
+    #     url = "https://api.github.com/repos/"+repo+self.endpoints[endpoint]
+    #     response = requests.get(
+    #         url,
+    #         auth=HTTPBasicAuth(self.USER, self.TOKEN),
+    #         headers={'If-Modified-Since': self.last_modified[repo][endpoint]})
 
-        if response.status_code != 304:
-            since = self._datetime_from_string(self.last_modified[repo][endpoint])
-            df = self._initial_download_single_repo(repo, coin, endpoint, since)
-        else:
-            df = None
-        return df
+    #     if response.status_code != 304:
+    #         since = self._datetime_from_string(self.last_modified[repo][endpoint])
+    #         df = self._initial_download_single_repo(repo, coin, endpoint, since)
+    #     else:
+    #         df = None
+    #     return df
 
-    def _process_commits(self, df):
-        commits = df['commit'].apply(pd.Series)
-        commits.columns = ['commit_'+s for s in commits.columns]
-        df = pd.concat([df.drop(['commit'], axis=1), commits], axis=1)
-
-        date = df['commit_author'].apply(pd.Series)['date'].apply(pd.to_datetime)
-        df = pd.concat([df, date], axis=1)
-
-        login = df['author'].apply(pd.Series)['login']
-        df = pd.concat([df, login], axis=1)
-
-        # choose what to export
-        df = df[['login', 'commit_message', 'date', 'repo', 'coin']]
-        df.rename(columns={'commit_message': 'message'}, inplace=True)
-        return df
-
-    def _process_issues(self, df):
-        return df
 
     def initial_download_endpoint(self, endpoint):
         # get for all repos
@@ -284,11 +319,6 @@ class GitWatcher():
         dfs = list(map(self.incremental_download_endpoint, self.endpoints))
         return dict(zip(self.endpoints, dfs))
 
-    def poller(self):
-        self.polling = True
-        while self.polling:
-            self.incremental_download()
-            time.sleep(self.poll_delay)
 
 
 
@@ -297,7 +327,12 @@ if __name__ == '__main__':
     app_config['GIT_REPOS'] = {'BTC': ['bitcoin/bitcoin'], 'ETH': ['ethereum/go-ethereum']}
     app_config['GIT_USER'] = 'omdv'
     app_config['GIT_TOKEN'] = 'bdbae9884072bba932f755ee370fd85f001a2928'
-    app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_test'
-    watcher = GitWatcher()
+    app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_dev'
+
+    engine = create_engine(app_config['SQLALCHEMY_DATABASE_URI'])
+    controls = pd.read_sql('control_repos', engine)
+    # time = controls['last_update'][0]
+
+    watcher = GitWatcher('BTC', 'omdv/flask-boilerplate', dt.datetime(2000, 1, 1))
     watcher.set_app_config(app_config)
     # df = watcher.initial_download()

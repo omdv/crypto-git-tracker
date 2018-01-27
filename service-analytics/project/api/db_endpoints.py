@@ -117,21 +117,21 @@ def get_daily_commits():
     return resp
 
 
-@db_blueprint.route('/summary_table', methods=['GET'])
-def get_summary_table():
-    # analytics = GitAnalytics(app.config)
-    # _ = analytics.summary_table()
+# @db_blueprint.route('/summary_table', methods=['GET'])
+# def get_summary_table():
+#     # analytics = GitAnalytics(app.config)
+#     # _ = analytics.summary_table()
 
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('summary_table', engine)
+#     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+#     df = pd.read_sql('summary_table', engine)
 
-    resp = Response(
-        response=df.to_json(orient='records'),
-        status=200,
-        mimetype="application/json")
+#     resp = Response(
+#         response=df.to_json(orient='records'),
+#         status=200,
+#         mimetype="application/json")
 
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+#     resp.headers['Access-Control-Allow-Origin'] = '*'
+#     return resp
 
 
 @db_blueprint.route('/test', methods=['GET'])

@@ -47,9 +47,6 @@ class TestTestingConfig(TestCase):
             app.config['SQLALCHEMY_DATABASE_URI'] ==
             os.environ.get('DATABASE_TEST_URL')
         )
-        self.assertTrue(
-            app.config['GIT_REPOS'] == {'BTC': ['bitcoin/bitcoin']}
-        )
 
 
 class TestProductionConfig(TestCase):
