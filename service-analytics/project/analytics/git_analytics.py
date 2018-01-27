@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # define constants
-CONTRIBUTOR_COMMITS = 5
+DEVELOPER_COMMITS = 5
 DAILY_COMMITS_MA_PERIOD = 10
 DAILY_DEVS_MA_PERIOD = 10
 
@@ -28,36 +28,24 @@ class GitAnalytics():
         return df.merge(series, on='coin')
 
     """
-    Moving average of daily commits
-    """
-    def daily_commits_moving_average(self):
-        df = self._read_commits()
-        df = df.groupby([pd.Grouper(freq='D'), 'coin']).count()['login'].\
-            unstack().fillna(0)
-        df = df.rolling(DAILY_COMMITS_MA_PERIOD).mean()
-
-        # save to sql
-        engine = create_engine(self.DB_URI)
-        df.to_sql('daily_commits', engine, index=True, if_exists='replace')
-        return df
-
-    """
-    Summary table
+    Main function
+    Generates three tables in DB
     """
     def summary_table(self):
         df = self._read_commits()
+        engine = create_engine(self.DB_URI)
 
         # -------------- DEVELOPERS --------------
 
-        # unique developers
+        # unique contributors
         result = df.groupby(['coin']).login.nunique().reset_index()
         result.rename(columns={'login': 'unique_contributors'}, inplace=True)
 
-        # unique contributors
+        # unique developers > N commits
         _c = df.groupby('coin').login.value_counts().unstack().fillna(0).T
-        contributors = _c[np.any(_c.values > CONTRIBUTOR_COMMITS, axis=1)]
-        count_contrib = contributors.astype(bool).sum(axis=0)
-        result = self._merger(result, count_contrib, 'unique_developers')
+        _devs = _c[np.any(_c.values > DEVELOPER_COMMITS, axis=1)]
+        _devs = _devs.astype(bool).sum(axis=0)
+        result = self._merger(result, _devs, 'unique_developers')
 
         # developers MVP
         _df = df.groupby([pd.Grouper(freq='M'), 'coin']).\
@@ -69,8 +57,8 @@ class GitAnalytics():
         result = self._merger(result, mvps, 'monthly_mvp')
 
         # ratio of developers to contributors
-        result['developers_ratio'] = result['unique_developers']/\
-            result['unique_contributors']*100
+        result['developers_ratio'] = result['unique_developers'] /\
+            result['unique_contributors'] * 100
 
         # unique developers per day
         unique_devs_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
@@ -85,29 +73,32 @@ class GitAnalytics():
         result.rename(columns={'message': 'number_of_commits'}, inplace=True)
 
         # commits per day
-        commits_per_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
+        commits_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
             count()['login'].unstack().fillna(0)
 
         # moving average of daily commits
-        commits_per_day_rolling = commits_per_day.rolling(
+        commits_day_ma = commits_day.rolling(
             DAILY_COMMITS_MA_PERIOD).mean()
 
         # today
-        _d1 = commits_per_day_rolling.iloc[-2]
+        _d1 = commits_day_ma.iloc[-2]
         result = self._merger(result, _d1, 'daily_commits_last')
 
         # change from day before
-        _d2 = commits_per_day_rolling.iloc[-3]
-        _d2 = (_d1 - _d2)/_d2 * 100
+        _d2 = commits_day_ma.iloc[-3]
+        _d2 = (_d1 - _d2) / _d2 * 100
         result = self._merger(result, _d2, 'daily_commits_change')
 
-        # save to sql
-        engine = create_engine(self.DB_URI)
-        result.to_sql(
-            'summary_table', engine, index=False, if_exists='replace')
+        # -------------- SQL --------------
+
+        commits_day_ma.to_sql(
+            'daily_commits', engine, index=False, if_exists='replace')
 
         unique_devs_ma.to_sql(
             'daily_devs', engine, index=False, if_exists='replace')
+
+        result.to_sql(
+            'summary_table', engine, index=False, if_exists='replace')
 
         return result, unique_devs_ma
 
