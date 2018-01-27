@@ -1,15 +1,13 @@
-# project/tests/test_routes.py
+# project/tests/test_tasks.py
 
 import json
-import time
-import datetime as dt
-
-from project import db, create_app
+from project import db
 from project.api.models import RepoControlRecord, Commit
 from project.tests.base import BaseTestCase
-from project.tasks.watcher import task_watcher
+from project.analytics.git_watcher import GitWatcher
+from project.analytics.git_analytics import GitAnalytics
+from flask import current_app
 
-app, _ = create_app()
 
 def add_repo(url, coin):
     repo = RepoControlRecord(coin=coin, url=url)
@@ -18,20 +16,70 @@ def add_repo(url, coin):
     return repo
 
 
-class TestWatcherClass(BaseTestCase):
+def call_watcher_task(repos):
+    updated = 0
+    for repo in repos:
+        watcher = GitWatcher(repo.coin, repo.url, repo.last_update)
+        watcher.set_app_config(current_app.config)
+        new_date = watcher.download()
+        if new_date:
+            repo.last_update = new_date
+            updated += 1
+        db.session.add(repo)
+    db.session.commit()
+    return "Updated {} of {}".format(updated, len(repos))
+
+
+def call_summary_task(app_config):
+    analyzer = GitAnalytics(app_config)
+    df, _ = analyzer.summary_table()
+    return df
+
+
+class TestCeleryTasksClass(BaseTestCase):
     """Tests for the Watcher class"""
 
-    def create_app(self):
-        app.config.from_object('project.config.TestingConfig')
-        return app
-
-    def test_watcher_class(self):
+    def test_celery_tasks(self):
         add_repo(coin='Test', url='omdv/robinhood-portfolio')
-        result = task_watcher()
-        self.assertEqual(result, 'Updated 1')
+        repos = RepoControlRecord.query.all()
+        self.assertEqual(len(repos), 1)
 
-        # time.sleep(2)
+        # first call
+        result = call_watcher_task(repos)
+        self.assertEqual(result, 'Updated 1 of 1')
+        commits = Commit.query.all()
+        self.assertEqual(len(commits), 42)
 
-        # with app.app_context():
-        #     commits = Commit.query.all()
-        # self.assertEqual(commits, 42)
+        # second call
+        repos = RepoControlRecord.query.all()
+        result = call_watcher_task(repos)
+        self.assertEqual(result, 'Updated 0 of 1')
+        commits = Commit.query.all()
+        self.assertEqual(len(commits), 42)
+
+        # call summary
+        df = call_summary_task(current_app.config)
+        self.assertIn('omdv', df['monthly_mvp'].values)
+        self.assertEqual(100, df['developers_ratio'].values[0])
+
+        with self.client:
+            response = self.client.get('/commits')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(data['data']['commits']), 42)
+
+            response = self.client.get('/daily_commits')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(data), 26)
+
+            response = self.client.get('/daily_devs')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(data), 26)
+
+            response = self.client.get('/summary_table')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(data), 1)
+            self.assertIn('omdv', data[0]['monthly_mvp'])
