@@ -9,8 +9,8 @@ from project.analytics.git_analytics import GitAnalytics
 from flask import current_app
 
 
-def add_repo(url, coin):
-    repo = RepoControlRecord(coin=coin, url=url)
+def add_repo(coin, symbol, url):
+    repo = RepoControlRecord(coin=coin, symbol=symbol, url=url)
     db.session.add(repo)
     db.session.commit()
     return repo
@@ -19,7 +19,7 @@ def add_repo(url, coin):
 def call_watcher_task(repos):
     updated = 0
     for repo in repos:
-        watcher = GitWatcher(repo.coin, repo.url, repo.last_update)
+        watcher = GitWatcher(repo.coin, repo.symbol, repo.url, repo.last_update)
         watcher.set_app_config(current_app.config)
         new_date = watcher.download()
         if new_date:
@@ -32,7 +32,7 @@ def call_watcher_task(repos):
 
 def call_summary_task(app_config):
     analyzer = GitAnalytics(app_config)
-    df, _ = analyzer.summary_table()
+    df, _, _ = analyzer.summary_table()
     return df
 
 
@@ -40,7 +40,7 @@ class TestCeleryTasksClass(BaseTestCase):
     """Tests for the Watcher class"""
 
     def test_celery_tasks(self):
-        add_repo(coin='Test', url='omdv/robinhood-portfolio')
+        add_repo(coin='Test', symbol='TST', url='omdv/robinhood-portfolio')
         repos = RepoControlRecord.query.all()
         self.assertEqual(len(repos), 1)
 
@@ -71,12 +71,12 @@ class TestCeleryTasksClass(BaseTestCase):
             response = self.client.get('/daily_commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 26)
+            self.assertEqual(len(data), 76)
 
             response = self.client.get('/daily_devs')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 26)
+            self.assertEqual(len(data), 76)
 
             response = self.client.get('/summary_table')
             data = json.loads(response.data.decode())

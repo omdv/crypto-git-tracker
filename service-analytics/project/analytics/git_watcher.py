@@ -8,11 +8,12 @@ from sqlalchemy import create_engine
 
 
 class GitWatcher():
-    def __init__(self, coin, repo, last_update):
-        self.coin = coin
-        self.repo = repo
-        self.last_update = self._string_from_datetime(last_update)
+    def __init__(self, coin, symbol, repo, last_update):
         self.endpoint = '/commits?per_page=100'
+        self.coin = coin
+        self.symbol = symbol
+        self.repo = repo
+        self.last_update = last_update
 
     """
     Separate method to pass config after instantiation of Flask app
@@ -37,7 +38,10 @@ class GitWatcher():
         return dt.datetime.strptime(last_update, "%a, %d %b %Y %H:%M:%S %Z")
 
     def _string_from_datetime(self, last_update):
-        return last_update.strftime("%a, %d %b %Y %H:%M:%S%Z") + ' GMT'
+        return last_update.strftime("%a, %d %b %Y %H:%M:%S") + ' GMT'
+
+    def _iso_datetime(self, last_update):
+        return last_update.strftime("%Y-%m-%dT%H:%M:%S") + 'GMT'
 
     """
     Parse response header.
@@ -80,11 +84,11 @@ class GitWatcher():
     def _download_page(self, pagenum):
         url = "https://api.github.com/repos/" + self.repo + self.endpoint
         url = url + '&page={}'.format(pagenum)
+        url = url + '&since={}'.format(self._iso_datetime(self.last_update))
 
         response = requests.get(
             url,
-            auth=HTTPBasicAuth(self.USER, self.TOKEN),
-            headers={'If-Modified-Since': self.last_update})
+            auth=HTTPBasicAuth(self.USER, self.TOKEN))
 
         return pd.DataFrame(response.json()), response
 
@@ -100,19 +104,21 @@ class GitWatcher():
         df = pd.concat([df, login], axis=1)
 
         # choose what to export
-        df = df[['login', 'commit_message', 'date', 'repo', 'coin', 'url']]
+        df = df[['login', 'commit_message', 'date', 'repo', 'coin', 'symbol', 'url']]
         df.rename(columns={'commit_message': 'message'}, inplace=True)
 
         return df
 
     def download(self):
         url = "https://api.github.com/repos/" + self.repo + self.endpoint
+        url = url + '&since={}'.format(self._iso_datetime(self.last_update))
 
         # first request
         response = requests.get(
             url,
             auth=HTTPBasicAuth(self.USER, self.TOKEN),
-            headers={'If-Modified-Since': self.last_update})
+            headers={'If-Modified-Since':
+                     self._string_from_datetime(self.last_update)})
 
         if response.status_code != 304:
             response_dataframes = []
@@ -132,6 +138,7 @@ class GitWatcher():
             df.reset_index(inplace=True)
             df['repo'] = self.repo
             df['coin'] = self.coin
+            df['symbol'] = self.symbol
             df = self._process_commits(df)
 
             # export to DB
@@ -146,15 +153,14 @@ class GitWatcher():
 
 if __name__ == '__main__':
     app_config = {}
-    app_config['GIT_REPOS'] = {'BTC': ['bitcoin/bitcoin'], 'ETH': ['ethereum/go-ethereum']}
     app_config['GIT_USER'] = 'omdv'
     app_config['GIT_TOKEN'] = 'bdbae9884072bba932f755ee370fd85f001a2928'
     app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_dev'
 
     engine = create_engine(app_config['SQLALCHEMY_DATABASE_URI'])
-    controls = pd.read_sql('control_repos', engine)
-    # time = controls['last_update'][0]
+    repos = pd.read_sql('control_repos', engine)
 
-    watcher = GitWatcher('BTC', 'omdv/flask-boilerplate', dt.datetime(2000, 1, 1))
-    watcher.set_app_config(app_config)
-    # df = watcher.initial_download()
+    for _r in repos.values:
+        watcher = GitWatcher(_r[1], _r[3], _r[2], _r[4])
+        watcher.set_app_config(app_config)
+        new_date = watcher.download()

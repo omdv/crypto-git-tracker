@@ -1,7 +1,6 @@
 # project/config.py
 
 import os
-import json
 from datetime import timedelta
 
 
@@ -10,15 +9,14 @@ class BaseConfig:
     DEBUG = False
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    GIT_REPOS = {
-        'BTC': ['bitcoin/bitcoin'],
-        'ETH': ['ethereum/go-ethereum'],
-        'BCH': [
-            'Bitcoin-ABC/bitcoin-abc',
-            'bitcoinclassic/bitcoinclassic',
-            'bitcoinxt/bitcoinxt',
-            'BitcoinUnlimited/BitcoinUnlimited'],
-        'ADA': ['input-output-hk/cardano-sl']}
+    # GIT_REPOS = {
+    #     'ETH': ['ethereum/go-ethereum'],
+    #     'BCH': [
+    #         'Bitcoin-ABC/bitcoin-abc',
+    #         'bitcoinclassic/bitcoinclassic',
+    #         'bitcoinxt/bitcoinxt',
+    #         'BitcoinUnlimited/BitcoinUnlimited'],
+    #     'ADA': ['input-output-hk/cardano-sl']}
     GIT_USER = os.environ.get('GIT_USER')
     GIT_TOKEN = os.environ.get('GIT_TOKEN')
 
@@ -41,11 +39,11 @@ class DevelopmentConfig(BaseConfig):
     CELERYBEAT_SCHEDULE = {
         'watcher': {
             'task': 'task_watcher',
-            'schedule': timedelta(seconds=120)
+            'schedule': timedelta(seconds=60)
         },
         'summary': {
             'task': 'task_summary',
-            'schedule': timedelta(seconds=600)
+            'schedule': timedelta(seconds=60)
         },
     }
 
@@ -58,8 +56,12 @@ class TestingConfig(BaseConfig):
     CELERYBEAT_SCHEDULE = {
         'watcher': {
             'task': 'task_watcher',
-            'schedule': timedelta(seconds=5)
-        }
+            'schedule': timedelta(seconds=60)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=60)
+        },
     }
 
 

@@ -7,28 +7,33 @@ app, cel = create_app()
 
 
 @cel.task(name='task_watcher', base=QueueOnce, once={'graceful': True})
-def task_watcher():
+def task_watcher(verbose=True):
     with app.app_context():
         # read control table
         repos = RepoControlRecord.query.all()
+        updated = 0
 
         # query watcher
-        for repo in repos:
-            print("Coin: {}\t Url: {}\t Date: {}".
-                  format(repo.coin, repo.url, repo.last_update))
+        for _r in repos:
+            if verbose:
+                print("Coin: {}\t Url: {}\t Date: {}".
+                      format(_r.symbol, _r.url, _r.last_update))
 
-            watcher = GitWatcher(repo.coin, repo.url, repo.last_update)
+            watcher = GitWatcher(_r.coin, _r.symbol, _r.url, _r.last_update)
             watcher.set_app_config(app.config)
             new_date = watcher.download()
             if new_date:
-                repo.last_update = new_date
-            db.session.add(repo)
+                _r.last_update = new_date
+                updated += 1
+            db.session.add(_r)
 
         # save new data
         try:
             db.session.commit()
-            print("Successfully saved\n")
-            result = "Updated {}".format(len(repos))
+            result_string = "Updated {} of {}".format(updated, len(repos))
+            if verbose:
+                print(result_string)
+            result = result_string
         except:
             db.session.rollback()
             raise BaseException("Failed to save updated date")

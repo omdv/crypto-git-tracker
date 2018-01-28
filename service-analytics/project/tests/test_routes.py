@@ -10,9 +10,10 @@ from project.tests.base import BaseTestCase
 
 
 # helper function to add commits
-def add_commit(login, message, date, repo, coin, url, delay=0):
+def add_commit(login, message, date, repo, coin, symbol, url, delay=0):
     commit = Commit(
-        login=login, message=message, date=date, repo=repo, coin=coin, url=url)
+        login=login, message=message, date=date,
+        repo=repo, coin=coin, symbol=symbol, url=url)
     db.session.add(commit)
     db.session.commit()
     time.sleep(delay)
@@ -28,6 +29,7 @@ class TestAnalyticsService(BaseTestCase):
             message='Test #1',
             date=dt.datetime.today(),
             coin='coin',
+            symbol='sym',
             repo='repo',
             url='url')
         add_commit(
@@ -35,6 +37,7 @@ class TestAnalyticsService(BaseTestCase):
             message='Test #2',
             date=dt.datetime.today(),
             coin='coin',
+            symbol='sym',
             repo='repo',
             url='url')
         with self.client:

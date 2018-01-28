@@ -1,3 +1,4 @@
+import requests
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
@@ -18,6 +19,15 @@ class GitAnalytics():
         df.set_index("date", inplace=True)
         return df
 
+    def _download_market_info(self, coin):
+        url = 'https://api.coinmarketcap.com/v1/ticker/{}/'.format(coin)
+        _r = requests.get(url)
+        try:
+            _d = _r.json()[0]
+        except KeyError:
+            _d = {'price_usd': 0, 'market_cap_usd': 0}
+        return float(_d['price_usd']), float(_d['market_cap_usd'])
+
     """
     Merge series with df under 'name'
     """
@@ -36,7 +46,6 @@ class GitAnalytics():
         engine = create_engine(self.DB_URI)
 
         # -------------- DEVELOPERS --------------
-
         # unique contributors
         result = df.groupby(['coin']).login.nunique().reset_index()
         result.rename(columns={'login': 'unique_contributors'}, inplace=True)
@@ -61,12 +70,26 @@ class GitAnalytics():
             result['unique_contributors'] * 100
 
         # unique developers per day
-        unique_devs_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
+        unique_devs = df.groupby([pd.Grouper(freq='D'), 'coin']).\
             login.nunique().unstack().fillna(0)
-        unique_devs_ma = unique_devs_day.rolling(DAILY_DEVS_MA_PERIOD).mean()
+
+        # resample to 1 day and produce MA
+        unique_devs = unique_devs.resample('1D').asfreq().fillna(0)
+        unique_devs_ma = unique_devs.rolling(DAILY_DEVS_MA_PERIOD).mean()
+
+        # today
+        _d1 = unique_devs_ma.iloc[-2]
+        result = self._merger(result, _d1, 'today_devs')
+
+        # change from day before
+        _d2 = unique_devs_ma.iloc[-3]
+        _d2 = (_d1 - _d2) / _d2 * 100
+        # fix division by zero
+        _d2.fillna(0, inplace=True)
+        result = self._merger(result, _d2, 'today_devs_change')
+
 
         # -------------- COMMITS --------------
-
         # add commits
         commits = df.groupby(['coin']).message.count().reset_index()
         result = pd.merge(result, commits, how='left', on='coin')
@@ -76,36 +99,56 @@ class GitAnalytics():
         commits_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
             count()['login'].unstack().fillna(0)
 
-        # moving average of daily commits
+        # resample to 1 day and produce MA
+        commits_day = commits_day.resample('1D').asfreq().fillna(0)
         commits_day_ma = commits_day.rolling(
             DAILY_COMMITS_MA_PERIOD).mean()
 
         # today
         _d1 = commits_day_ma.iloc[-2]
-        result = self._merger(result, _d1, 'daily_commits_last')
+        result = self._merger(result, _d1, 'today_commits')
 
         # change from day before
         _d2 = commits_day_ma.iloc[-3]
         _d2 = (_d1 - _d2) / _d2 * 100
-        result = self._merger(result, _d2, 'daily_commits_change')
+        # fix division by zero
+        _d2.fillna(0, inplace=True)
+        result = self._merger(result, _d2, 'today_commits_change')
+
+        # -------------- MARKET DATA --------------
+        result[['price', 'market_cap']] = result['coin'].\
+            apply(self._download_market_info).\
+            apply(pd.Series)
+
+        # -------------- REPOS DATA --------------
+        _rc = df.groupby(['coin']).repo.nunique().reset_index()
+        _rc.rename(columns={'repo': 'repo_count'}, inplace=True)
+        result = pd.merge(result, _rc, how='left', on='coin')
+
+        # unique repos
+        _rp = df.groupby('coin').repo.apply(pd.unique).reset_index()
+        _rp.rename(columns={'repo': 'repos'}, inplace=True)
+        _rp['repos'] = _rp['repos'].apply(",".join)
+        result = pd.merge(result, _rp, how='left', on='coin')
 
         # -------------- SQL --------------
-
+        commits_day_ma.reset_index(inplace=True)
         commits_day_ma.to_sql(
             'daily_commits', engine, index=False, if_exists='replace')
 
+        unique_devs_ma.reset_index(inplace=True)
         unique_devs_ma.to_sql(
             'daily_devs', engine, index=False, if_exists='replace')
 
         result.to_sql(
             'summary_table', engine, index=False, if_exists='replace')
 
-        return result, unique_devs_ma
+        return result, commits_day_ma, unique_devs_ma
 
 
 if __name__ == '__main__':
     app_config = {}
     app_config['SQLALCHEMY_DATABASE_URI'] =\
         'postgres://postgres:postgres@localhost:5435/analytics_dev'
-    analytics = GitAnalytics(app_config)
-    d1, d2 = analytics.summary_table()
+    an = GitAnalytics(app_config)
+    d1, d2, d3 = an.summary_table()
