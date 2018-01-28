@@ -12,7 +12,7 @@ matrix:
         - export APP_SETTINGS="project.config.TestingConfig"
         - export DATABASE_TEST_URL=postgresql://postgres:@localhost/analytics_test
         - export GIT_USER=omdv
-        - export GIT_TOKEN=
+        - export GIT_TOKEN=bdbae9884072bba932f755ee370fd85f001a2928
         - psql -c 'create database analytics_test;' -U postgres
         - python manage.py recreate_db
       script:

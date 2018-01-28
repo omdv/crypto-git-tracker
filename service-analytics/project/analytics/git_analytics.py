@@ -85,6 +85,7 @@ class GitAnalytics():
         _d2 = unique_devs_ma.iloc[-3]
         _d2 = (_d1 - _d2) / _d2 * 100
         # fix division by zero
+        _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
         _d2.fillna(0, inplace=True)
         result = self._merger(result, _d2, 'today_devs_change')
 
@@ -112,6 +113,7 @@ class GitAnalytics():
         _d2 = commits_day_ma.iloc[-3]
         _d2 = (_d1 - _d2) / _d2 * 100
         # fix division by zero
+        _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
         _d2.fillna(0, inplace=True)
         result = self._merger(result, _d2, 'today_commits_change')
 
