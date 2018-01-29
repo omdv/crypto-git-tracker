@@ -41,34 +41,34 @@ services:
     secrets:
      - my_git_secret
 
-  # client:
-  #   container_name: client
-  #   build:
-  #     context: ./service-client
-  #     dockerfile: Dockerfile-dev
-  #   volumes:
-  #     - './service-client:/usr/src/app'
-  #   ports:
-  #     - '3007:3000' # expose ports - HOST:CONTAINER
-  #   environment:
-  #     - NODE_ENV=development
-  #     - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
-  #   depends_on:
-  #     - analytics
-  #   links:
-  #     - analytics
+  client:
+    container_name: client
+    build:
+      context: ./service-client
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './service-client:/usr/src/app'
+    ports:
+      - '3007:3000' # expose ports - HOST:CONTAINER
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
+    depends_on:
+      - analytics
+    links:
+      - analytics
 
-  # nginx:
-  #   container_name: nginx
-  #   build: ./service-nginx/
-  #   restart: always
-  #   ports:
-  #     - 80:80
-  #   depends_on:
-  #     - analytics
-  #     - client
-  #   links:
-  #     - analytics
+  nginx:
+    container_name: nginx
+    build: ./service-nginx/
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - analytics
+      - client
+    links:
+      - analytics
 
   redis:
     container_name: redis

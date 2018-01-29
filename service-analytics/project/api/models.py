@@ -14,30 +14,30 @@ class Commit(db.Model):
     message = db.Column(db.Text, nullable=True)
     date = db.Column(db.DateTime, nullable=False)
     repo = db.Column(db.String(128), nullable=False)
-    coin = db.Column(db.String(128), nullable=False)
-    symbol = db.Column(db.String(128), nullable=False)
+    ticker = db.Column(db.String(128), nullable=False)
+    apihandle = db.Column(db.String(128), nullable=False)
     url = db.Column(db.String(256), nullable=False)
 
-    def __init__(self, login, message, date, repo, coin, symbol, url):
+    def __init__(self, login, message, date, repo, ticker, apihandle, url):
         self.login = login
         self.message = message
         self.date = date
         self.repo = repo
-        self.coin = coin
-        self.symbol = symbol
+        self.ticker = ticker
+        self.apihandle = apihandle
         self.url = url
 
 
 class RepoControlRecord(db.Model):
     __tablename__ = "control_repos"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    coin = db.Column(db.String(128), nullable=False)
+    ticker = db.Column(db.String(128), nullable=False)
+    apihandle = db.Column(db.String(128), nullable=False)
     url = db.Column(db.String(128), nullable=False)
-    symbol = db.Column(db.String(128), nullable=False)
     last_update = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, coin, symbol, url):
-        self.coin = coin
+    def __init__(self, ticker, apihandle, url):
+        self.ticker = ticker
+        self.apihandle = apihandle
         self.url = url
-        self.symbol = symbol
         self.last_update = INIT_LAST_UPDATE

@@ -39,7 +39,7 @@ class DevelopmentConfig(BaseConfig):
     CELERYBEAT_SCHEDULE = {
         'watcher': {
             'task': 'task_watcher',
-            'schedule': timedelta(seconds=60)
+            'schedule': timedelta(seconds=10)
         },
         'summary': {
             'task': 'task_summary',

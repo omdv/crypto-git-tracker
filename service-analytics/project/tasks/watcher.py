@@ -17,9 +17,10 @@ def task_watcher(verbose=True):
         for _r in repos:
             if verbose:
                 print("Coin: {}\t Url: {}\t Date: {}".
-                      format(_r.symbol, _r.url, _r.last_update))
+                      format(_r.ticker, _r.url, _r.last_update))
 
-            watcher = GitWatcher(_r.coin, _r.symbol, _r.url, _r.last_update)
+            watcher = GitWatcher(
+                _r.ticker, _r.apihandle, _r.url, _r.last_update)
             watcher.set_app_config(app.config)
             new_date = watcher.download()
             if new_date:

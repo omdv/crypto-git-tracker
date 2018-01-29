@@ -16,9 +16,9 @@ export default class Lines extends Component {
 
     // define lines for each coin
     const lines = coins.map((coin, i) => line()
-      .curve(curveBasis)
-      .x(function(d) { return xScale(d.date); })
-      .y(function(d) { return yScale(d[coin]); }))
+      // .curve(curveBasis)
+      .x(function(d) { return xScale(d.date) })
+      .y(function(d) { return yScale(d[coin]) }))
 
     // define paths
     const paths = (

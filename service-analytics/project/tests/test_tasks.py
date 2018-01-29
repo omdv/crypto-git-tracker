@@ -9,8 +9,9 @@ from project.analytics.git_analytics import GitAnalytics
 from flask import current_app
 
 
-def add_repo(coin, symbol, url):
-    repo = RepoControlRecord(coin=coin, symbol=symbol, url=url)
+def add_repo(ticker, apihandle, url):
+    repo = RepoControlRecord(ticker=ticker,
+                             apihandle=apihandle, url=url)
     db.session.add(repo)
     db.session.commit()
     return repo
@@ -19,7 +20,8 @@ def add_repo(coin, symbol, url):
 def call_watcher_task(repos):
     updated = 0
     for repo in repos:
-        watcher = GitWatcher(repo.coin, repo.symbol, repo.url, repo.last_update)
+        watcher = GitWatcher(repo.ticker, repo.apihandle,
+                             repo.url, repo.last_update)
         watcher.set_app_config(current_app.config)
         new_date = watcher.download()
         if new_date:
@@ -40,7 +42,8 @@ class TestCeleryTasksClass(BaseTestCase):
     """Tests for the Watcher class"""
 
     def test_celery_tasks(self):
-        add_repo(coin='Test', symbol='TST', url='omdv/robinhood-portfolio')
+        add_repo(ticker='BTC', apihandle='bitcoin',
+                 url='omdv/robinhood-portfolio')
         repos = RepoControlRecord.query.all()
         self.assertEqual(len(repos), 1)
 

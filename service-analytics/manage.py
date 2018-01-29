@@ -55,11 +55,12 @@ def recreate_db():
     db.session.commit()
 
 
-@manager.option('-r', '--repo', help='coin:symbol:repo_url')
+@manager.option('-r', '--repo', help='ticker:apihandle:repo_url')
 def add_repo_url(repo):
     """Seeds the database."""
-    coin, symbol, url = repo.split(':')
-    db.session.add(RepoControlRecord(coin=coin, symbol=symbol, url=url))
+    ticker, apihandle, url = repo.split(':')
+    db.session.add(RepoControlRecord(
+        ticker=ticker, apihandle=apihandle, url=url))
     db.session.commit()
 
 

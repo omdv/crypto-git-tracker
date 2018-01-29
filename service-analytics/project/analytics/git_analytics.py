@@ -19,14 +19,14 @@ class GitAnalytics():
         df.set_index("date", inplace=True)
         return df
 
-    def _download_market_info(self, coin):
-        url = 'https://api.coinmarketcap.com/v1/ticker/{}/'.format(coin)
+    def _download_market_info(self, apihandle):
+        url = 'https://api.coinmarketcap.com/v1/ticker/{}/'.format(apihandle)
         _r = requests.get(url)
         try:
             _d = _r.json()[0]
         except KeyError:
             _d = {'price_usd': 0, 'market_cap_usd': 0}
-        return float(_d['price_usd']), float(_d['market_cap_usd'])
+        return float(_d['price_usd']), float(_d['market_cap_usd']), _d['name']
 
     """
     Merge series with df under 'name'
@@ -35,7 +35,7 @@ class GitAnalytics():
         series = series.to_frame()
         series.columns = [name]
         series.reset_index(inplace=True)
-        return df.merge(series, on='coin')
+        return df.merge(series, on='ticker')
 
     """
     Main function
@@ -47,17 +47,18 @@ class GitAnalytics():
 
         # -------------- DEVELOPERS --------------
         # unique contributors
-        result = df.groupby(['coin']).login.nunique().reset_index()
+        result = df.groupby(['ticker', 'apihandle']).\
+            login.nunique().reset_index()
         result.rename(columns={'login': 'unique_contributors'}, inplace=True)
 
         # unique developers > N commits
-        _c = df.groupby('coin').login.value_counts().unstack().fillna(0).T
+        _c = df.groupby('ticker').login.value_counts().unstack().fillna(0).T
         _devs = _c[np.any(_c.values > DEVELOPER_COMMITS, axis=1)]
         _devs = _devs.astype(bool).sum(axis=0)
         result = self._merger(result, _devs, 'unique_developers')
 
         # developers MVP
-        _df = df.groupby([pd.Grouper(freq='M'), 'coin']).\
+        _df = df.groupby([pd.Grouper(freq='M'), 'ticker']).\
             login.value_counts().unstack()
         df_contrib = pd.DataFrame(np.divide(
             _df.values, _df.sum(axis=1).
@@ -70,7 +71,7 @@ class GitAnalytics():
             result['unique_contributors'] * 100
 
         # unique developers per day
-        unique_devs = df.groupby([pd.Grouper(freq='D'), 'coin']).\
+        unique_devs = df.groupby([pd.Grouper(freq='D'), 'ticker']).\
             login.nunique().unstack().fillna(0)
 
         # resample to 1 day and produce MA
@@ -89,15 +90,14 @@ class GitAnalytics():
         _d2.fillna(0, inplace=True)
         result = self._merger(result, _d2, 'today_devs_change')
 
-
         # -------------- COMMITS --------------
         # add commits
-        commits = df.groupby(['coin']).message.count().reset_index()
-        result = pd.merge(result, commits, how='left', on='coin')
+        commits = df.groupby(['ticker']).message.count().reset_index()
+        result = pd.merge(result, commits, how='left', on='ticker')
         result.rename(columns={'message': 'number_of_commits'}, inplace=True)
 
         # commits per day
-        commits_day = df.groupby([pd.Grouper(freq='D'), 'coin']).\
+        commits_day = df.groupby([pd.Grouper(freq='D'), 'ticker']).\
             count()['login'].unstack().fillna(0)
 
         # resample to 1 day and produce MA
@@ -118,20 +118,20 @@ class GitAnalytics():
         result = self._merger(result, _d2, 'today_commits_change')
 
         # -------------- MARKET DATA --------------
-        result[['price', 'market_cap']] = result['coin'].\
+        result[['price', 'market_cap', 'name']] = result['apihandle'].\
             apply(self._download_market_info).\
             apply(pd.Series)
 
         # -------------- REPOS DATA --------------
-        _rc = df.groupby(['coin']).repo.nunique().reset_index()
+        _rc = df.groupby(['ticker']).repo.nunique().reset_index()
         _rc.rename(columns={'repo': 'repo_count'}, inplace=True)
-        result = pd.merge(result, _rc, how='left', on='coin')
+        result = pd.merge(result, _rc, how='left', on='ticker')
 
         # unique repos
-        _rp = df.groupby('coin').repo.apply(pd.unique).reset_index()
+        _rp = df.groupby('ticker').repo.apply(pd.unique).reset_index()
         _rp.rename(columns={'repo': 'repos'}, inplace=True)
         _rp['repos'] = _rp['repos'].apply(",".join)
-        result = pd.merge(result, _rp, how='left', on='coin')
+        result = pd.merge(result, _rp, how='left', on='ticker')
 
         # -------------- SQL --------------
         commits_day_ma.reset_index(inplace=True)

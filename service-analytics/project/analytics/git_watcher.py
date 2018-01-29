@@ -8,10 +8,10 @@ from sqlalchemy import create_engine
 
 
 class GitWatcher():
-    def __init__(self, coin, symbol, repo, last_update):
+    def __init__(self, ticker, apihandle, repo, last_update):
         self.endpoint = '/commits?per_page=100'
-        self.coin = coin
-        self.symbol = symbol
+        self.ticker = ticker
+        self.apihandle = apihandle
         self.repo = repo
         self.last_update = last_update
 
@@ -104,7 +104,8 @@ class GitWatcher():
         df = pd.concat([df, login], axis=1)
 
         # choose what to export
-        df = df[['login', 'commit_message', 'date', 'repo', 'coin', 'symbol', 'url']]
+        df = df[['login', 'commit_message', 'date', 'repo', 'ticker',
+                 'apihandle', 'url']]
         df.rename(columns={'commit_message': 'message'}, inplace=True)
 
         return df
@@ -137,8 +138,8 @@ class GitWatcher():
             df = reduce(lambda x, y: pd.concat([x, y]), response_dataframes)
             df.reset_index(inplace=True)
             df['repo'] = self.repo
-            df['coin'] = self.coin
-            df['symbol'] = self.symbol
+            df['ticker'] = self.ticker
+            df['apihandle'] = self.apihandle
             df = self._process_commits(df)
 
             # export to DB
