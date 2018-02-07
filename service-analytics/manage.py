@@ -64,9 +64,19 @@ def add_repo_url(repo):
     db.session.commit()
 
 
+@manager.option('-f', '--filename', help='filename.csv')
+def add_repos(filename):
+    with open(filename, 'r') as _f:
+        repos = [line.split(':') for line in _f]
+    for _r in repos:
+        db.session.add(RepoControlRecord(ticker=_r[0], apihandle=_r[1],
+            url=_r[2].strip('\n')))
+    db.session.commit()
+
+
 @manager.command
 def rate_limit():
-    watcher = GitWatcher(None, None, dt.datetime(2000, 1, 1))
+    watcher = GitWatcher(None, None, None, dt.datetime(2000, 1, 1))
     watcher.set_app_config(app.config)
     print(watcher.get_rate_limit())
 

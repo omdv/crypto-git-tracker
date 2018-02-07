@@ -45,6 +45,10 @@ class GitAnalytics():
         df = self._read_commits()
         engine = create_engine(self.DB_URI)
 
+        # delete if dataframe is empty 
+        if df.shape[0] == 0:
+            return None, None, None 
+
         # -------------- DEVELOPERS --------------
         # unique contributors
         result = df.groupby(['ticker', 'apihandle']).\

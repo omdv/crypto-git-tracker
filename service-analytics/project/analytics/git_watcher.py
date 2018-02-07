@@ -162,6 +162,6 @@ if __name__ == '__main__':
     repos = pd.read_sql('control_repos', engine)
 
     for _r in repos.values:
-        watcher = GitWatcher(_r[1], _r[3], _r[2], _r[4])
+        watcher = GitWatcher(_r[1], _r[2], _r[3], _r[4])
         watcher.set_app_config(app_config)
         new_date = watcher.download()
