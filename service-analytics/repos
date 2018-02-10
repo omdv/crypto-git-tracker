@@ -1,6 +1,10 @@
 ADA:cardano:input-output-hk/cardano-sl
 NAS:nebulas-token:nebulasio/go-nebulas
 BTC:bitcoin:bitcoin/bitcoin
+BCH:bitcoin-cash:Bitcoin-ABC/bitcoin-abc
+BCH:bitcoin-cash:BitcoinUnlimited/BitcoinUnlimited
+BCH:bitcoin-cash:bitcoinclassic/bitcoinclassic
+BCH:bitcoin-cash:bitcoinxt/bitcoinxt
 SKY:skycoin:skycoin/skycoin
 LTC:litecoin:litecoin-project/litecoin
 EOS:eos:EOSIO/eos
@@ -17,3 +21,4 @@ ETC:ethereum-classic:ethereumproject/go-ethereum
 ZEC:zcash:zcash/zcash
 STEEM:steem:steemit/steem
 MIOTA:iota:iotaledger/iri
+NAV:nav-coin:NAVCoin/navcoin-core

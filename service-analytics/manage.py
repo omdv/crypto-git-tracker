@@ -59,8 +59,13 @@ def recreate_db():
 def add_repo_url(repo):
     """Seeds the database."""
     ticker, apihandle, url = repo.split(':')
-    db.session.add(RepoControlRecord(
-        ticker=ticker, apihandle=apihandle, url=url))
+    exists = db.session.query(
+        RepoControlRecord.id).filter_by(url=url).all() is not None
+    if not exists:
+        db.session.add(RepoControlRecord(
+            ticker=ticker, apihandle=apihandle, url=url))
+    else:
+        print("Repo already exists\n")
     db.session.commit()
 
 
@@ -69,8 +74,14 @@ def add_repos(filename):
     with open(filename, 'r') as _f:
         repos = [line.split(':') for line in _f]
     for _r in repos:
-        db.session.add(RepoControlRecord(ticker=_r[0], apihandle=_r[1],
-            url=_r[2].strip('\n')))
+        exists = db.session.query(
+            RepoControlRecord.id).filter_by(url=_r[2]).all() is not None
+        if not exists:
+            db.session.add(RepoControlRecord(
+                ticker=_r[0], apihandle=_r[1],
+                url=_r[2].strip('\n')))
+        else:
+            print("Repo already exists\n")
     db.session.commit()
 
 

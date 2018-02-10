@@ -11,6 +11,9 @@ def task_summary():
     with app.app_context():
         analyzer = GitAnalytics(app.config)
         df, _, _ = analyzer.summary_table()
-        print("Processed {} coins".format(df.shape[0]))
+        try:
+            print("Processed {} coins".format(df.shape[0]))
+        except:
+            print("Processed 0 coins")
 
     return 'Success summary'

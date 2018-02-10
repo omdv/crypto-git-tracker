@@ -30,7 +30,10 @@ def create_app():
     # register celery app
     celery = Celery(
         app.import_name,
-        include=['project.tasks.summary', 'project.tasks.watcher'],
+        include=[
+            'project.tasks.summary',
+            'project.tasks.watcher',
+            'project.tasks.rate_limit'],
         broker=app.config['CELERY_BROKER_URL'],
         backend=app.config['CELERY_BACKEND_URL'])
     celery.conf.update(app.config)

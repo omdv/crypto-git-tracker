@@ -3,7 +3,6 @@ import pandas as pd
 
 from flask import Blueprint, Response, jsonify
 from flask import current_app as app
-from project.analytics.git_watcher import GitWatcher
 
 from sqlalchemy import create_engine
 
@@ -75,15 +74,15 @@ def test_db():
 
 @db_blueprint.route('/git_rate_limit', methods=['GET'])
 def get_git_rate_limit():
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    df = pd.read_sql('git_rate_limit', engine)
+    df = df[['time', 'rate']]
+    # df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
-    # update configuration of watcher
-    watcher = GitWatcher(None, None, None, None)
-    watcher.set_app_config(app.config)
+    resp = Response(
+        response=df.to_json(orient='records'),
+        status=200,
+        mimetype="application/json")
 
-    response_object = {
-        'status': 'success',
-        'data': {
-            'rate_limit': watcher.get_rate_limit()
-        }
-    }
-    return jsonify(response_object), 200
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp

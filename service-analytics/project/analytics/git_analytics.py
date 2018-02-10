@@ -21,6 +21,7 @@ class GitAnalytics():
 
     def _download_market_info(self, apihandle):
         url = 'https://api.coinmarketcap.com/v1/ticker/{}/'.format(apihandle)
+        # print('Downloading market info for {}'.format(apihandle))
         _r = requests.get(url)
         try:
             _d = _r.json()[0]
@@ -45,9 +46,14 @@ class GitAnalytics():
         df = self._read_commits()
         engine = create_engine(self.DB_URI)
 
-        # delete if dataframe is empty 
+        # return none if dataframe is empty
         if df.shape[0] == 0:
-            return None, None, None 
+            return None, None, None
+
+        # ------------ PREPROCESSING -------------
+        # delete duplicates for coins with multiple repos
+        df.drop_duplicates(
+            subset=['ticker', 'login', 'date', 'message'], inplace=True)
 
         # -------------- DEVELOPERS --------------
         # unique contributors
@@ -83,16 +89,27 @@ class GitAnalytics():
         unique_devs_ma = unique_devs.rolling(DAILY_DEVS_MA_PERIOD).mean()
 
         # today
-        _d1 = unique_devs_ma.iloc[-2]
+        _d1 = unique_devs.iloc[-2]
         result = self._merger(result, _d1, 'today_devs')
 
         # change from day before
-        _d2 = unique_devs_ma.iloc[-3]
+        _d2 = unique_devs.iloc[-3]
         _d2 = (_d1 - _d2) / _d2 * 100
         # fix division by zero
         _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
         _d2.fillna(0, inplace=True)
         result = self._merger(result, _d2, 'today_devs_change')
+
+        # add days since the launch
+        _launch_date = unique_devs.apply(
+            lambda x: pd.Timestamp.now() - x[x != 0].index[0], axis=0)
+        result = self._merger(result, _launch_date, 'days_since_launch')
+        result['days_since_launch'] = result['days_since_launch'].apply(lambda x: x.days)
+
+        # mean number of devs per days since launch
+        _mean_devs_day = unique_devs.apply(
+            lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
+        result = self._merger(result, _mean_devs_day, 'mean_devs_day')
 
         # -------------- COMMITS --------------
         # add commits
@@ -110,16 +127,21 @@ class GitAnalytics():
             DAILY_COMMITS_MA_PERIOD).mean()
 
         # today
-        _d1 = commits_day_ma.iloc[-2]
+        _d1 = commits_day.iloc[-2]
         result = self._merger(result, _d1, 'today_commits')
 
         # change from day before
-        _d2 = commits_day_ma.iloc[-3]
+        _d2 = commits_day.iloc[-3]
         _d2 = (_d1 - _d2) / _d2 * 100
         # fix division by zero
         _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
         _d2.fillna(0, inplace=True)
         result = self._merger(result, _d2, 'today_commits_change')
+
+        # mean number of commits per day since launch
+        _mean_commits_day = commits_day.apply(
+            lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
+        result = self._merger(result, _mean_commits_day, 'mean_commits_day')
 
         # -------------- MARKET DATA --------------
         result[['price', 'market_cap', 'name']] = result['apihandle'].\

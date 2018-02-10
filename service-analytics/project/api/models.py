@@ -41,3 +41,14 @@ class RepoControlRecord(db.Model):
         self.apihandle = apihandle
         self.url = url
         self.last_update = INIT_LAST_UPDATE
+
+
+class GitRateLimitModel(db.Model):
+    __tablename__ = "git_rate_limit"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    time = db.Column(db.DateTime, nullable=False)
+    rate = db.Column(db.Float, nullable=False)
+
+    def __init__(self, time, rate):
+        self.time = time
+        self.rate = rate
