@@ -21,6 +21,19 @@ app, cel = create_app()
 manager = Manager(app)
 
 
+def add_one_repo(repo):
+    ticker, apihandle, url = repo.split(':')
+    if_exists = db.session.query(
+        RepoControlRecord.id).filter_by(url=url).all() is not None
+    if not if_exists:
+        db.session.add(RepoControlRecord(
+            ticker=ticker, apihandle=apihandle, url=url))
+        print("Repo {} was added".format(url))
+    else:
+        print("Repo {} already exists".format(url))
+    db.session.commit()
+
+
 @manager.command
 def cov():
     """Runs the unit tests with coverage."""
@@ -57,32 +70,15 @@ def recreate_db():
 
 @manager.option('-r', '--repo', help='ticker:apihandle:repo_url')
 def add_repo_url(repo):
-    """Seeds the database."""
-    ticker, apihandle, url = repo.split(':')
-    exists = db.session.query(
-        RepoControlRecord.id).filter_by(url=url).all() is not None
-    if not exists:
-        db.session.add(RepoControlRecord(
-            ticker=ticker, apihandle=apihandle, url=url))
-    else:
-        print("Repo already exists\n")
-    db.session.commit()
+    add_one_repo(repo)
 
 
 @manager.option('-f', '--filename', help='filename.csv')
 def add_repos(filename):
     with open(filename, 'r') as _f:
-        repos = [line.split(':') for line in _f]
+        repos = _f.readlines()
     for _r in repos:
-        exists = db.session.query(
-            RepoControlRecord.id).filter_by(url=_r[2]).all() is not None
-        if not exists:
-            db.session.add(RepoControlRecord(
-                ticker=_r[0], apihandle=_r[1],
-                url=_r[2].strip('\n')))
-        else:
-            print("Repo already exists\n")
-    db.session.commit()
+        add_one_repo(_r.strip('\n'))
 
 
 @manager.command

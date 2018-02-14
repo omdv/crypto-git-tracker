@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 
 # define constants
 DEVELOPER_COMMITS = 5
-DAILY_COMMITS_MA_PERIOD = 10
-DAILY_DEVS_MA_PERIOD = 10
+DAILY_COMMITS_MA_PERIOD = 16
+DAILY_DEVS_MA_PERIOD = 16
 
 
 class GitAnalytics():
@@ -80,36 +80,38 @@ class GitAnalytics():
         result['developers_ratio'] = result['unique_developers'] /\
             result['unique_contributors'] * 100
 
-        # unique developers per day
-        unique_devs = df.groupby([pd.Grouper(freq='D'), 'ticker']).\
+        # unique developers per period
+        unique_devs = df.groupby([pd.Grouper(freq='W'), 'ticker']).\
             login.nunique().unstack().fillna(0)
 
-        # resample to 1 day and produce MA
-        unique_devs = unique_devs.resample('1D').asfreq().fillna(0)
+        # resample and produce MA
+        unique_devs = unique_devs.resample('1W').asfreq().fillna(0)
         unique_devs_ma = unique_devs.rolling(DAILY_DEVS_MA_PERIOD).mean()
 
-        # today
-        _d1 = unique_devs.iloc[-2]
-        result = self._merger(result, _d1, 'today_devs')
+        # REMOVED
+        # # last period
+        # _d1 = unique_devs.iloc[-2]
+        # result = self._merger(result, _d1, 'current_devs')
 
-        # change from day before
-        _d2 = unique_devs.iloc[-3]
-        _d2 = (_d1 - _d2) / _d2 * 100
-        # fix division by zero
-        _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
-        _d2.fillna(0, inplace=True)
-        result = self._merger(result, _d2, 'today_devs_change')
+        # # change from day before
+        # _d2 = unique_devs.iloc[-3]
+        # _d2 = (_d1 - _d2) / _d2 * 100
+        # # fix division by zero
+        # _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
+        # _d2.fillna(0, inplace=True)
+        # result = self._merger(result, _d2, 'current_devs_change')
 
         # add days since the launch
         _launch_date = unique_devs.apply(
             lambda x: pd.Timestamp.now() - x[x != 0].index[0], axis=0)
         result = self._merger(result, _launch_date, 'days_since_launch')
-        result['days_since_launch'] = result['days_since_launch'].apply(lambda x: x.days)
+        result['days_since_launch'] = result['days_since_launch'].apply(
+            lambda x: x.days)
 
-        # mean number of devs per days since launch
-        _mean_devs_day = unique_devs.apply(
+        # mean number of devs per period since launch
+        _mean_devs_period = unique_devs.apply(
             lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
-        result = self._merger(result, _mean_devs_day, 'mean_devs_day')
+        result = self._merger(result, _mean_devs_period, 'mean_devs_period')
 
         # -------------- COMMITS --------------
         # add commits
@@ -118,30 +120,31 @@ class GitAnalytics():
         result.rename(columns={'message': 'number_of_commits'}, inplace=True)
 
         # commits per day
-        commits_day = df.groupby([pd.Grouper(freq='D'), 'ticker']).\
+        commits_day = df.groupby([pd.Grouper(freq='W'), 'ticker']).\
             count()['login'].unstack().fillna(0)
 
-        # resample to 1 day and produce MA
-        commits_day = commits_day.resample('1D').asfreq().fillna(0)
+        # resample and produce MA
+        commits_day = commits_day.resample('1W').asfreq().fillna(0)
         commits_day_ma = commits_day.rolling(
             DAILY_COMMITS_MA_PERIOD).mean()
 
-        # today
-        _d1 = commits_day.iloc[-2]
-        result = self._merger(result, _d1, 'today_commits')
+        # REMOVED
+        # # today
+        # _d1 = commits_day.iloc[-2]
+        # result = self._merger(result, _d1, 'current_commits')
 
-        # change from day before
-        _d2 = commits_day.iloc[-3]
-        _d2 = (_d1 - _d2) / _d2 * 100
-        # fix division by zero
-        _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
-        _d2.fillna(0, inplace=True)
-        result = self._merger(result, _d2, 'today_commits_change')
+        # # change from day before
+        # _d2 = commits_day.iloc[-3]
+        # _d2 = (_d1 - _d2) / _d2 * 100
+        # # fix division by zero
+        # _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
+        # _d2.fillna(0, inplace=True)
+        # result = self._merger(result, _d2, 'current_commits_change')
 
-        # mean number of commits per day since launch
-        _mean_commits_day = commits_day.apply(
-            lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
-        result = self._merger(result, _mean_commits_day, 'mean_commits_day')
+        # # mean number of commits per day since launch
+        # _mean_commits_day = commits_day.apply(
+        #     lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
+        # result = self._merger(result, _mean_commits_day, 'mean_commits_period')
 
         # -------------- MARKET DATA --------------
         result[['price', 'market_cap', 'name']] = result['apihandle'].\
@@ -151,7 +154,7 @@ class GitAnalytics():
         # -------------- REPOS DATA --------------
         _rc = df.groupby(['ticker']).repo.nunique().reset_index()
         _rc.rename(columns={'repo': 'repo_count'}, inplace=True)
-        result = pd.merge(result, _rc, how='left', on='ticker')
+        # result = pd.merge(result, _rc, how='left', on='ticker')
 
         # unique repos
         _rp = df.groupby('ticker').repo.apply(pd.unique).reset_index()

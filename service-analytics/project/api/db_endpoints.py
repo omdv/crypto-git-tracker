@@ -13,58 +13,64 @@ db_blueprint = Blueprint('db', __name__)
 @db_blueprint.route('/commits', methods=['GET'])
 def get_all_commits():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('commits', engine)
-    response_object = {
-        'status': 'success',
-        'data': {
-            'commits': df.to_dict(orient='records')
-        }
-    }
-    return jsonify(response_object), 200
+    try:
+        df = pd.read_sql('commits', engine)
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
+
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
 
 
 @db_blueprint.route('/daily_commits', methods=['GET'])
 def get_daily_commits():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('daily_commits', engine).fillna(0)
-    # df.set_index('date', inplace=True)
+    try:
+        df = pd.read_sql('daily_commits', engine).fillna(0)
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
 
-    resp = Response(
-        response=df.to_json(orient='records'),
-        status=200,
-        mimetype="application/json")
-
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
 
 
 @db_blueprint.route('/daily_devs', methods=['GET'])
 def get_daily_devs():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('daily_devs', engine).fillna(0)
-    df.set_index('date', inplace=True)
-
-    resp = Response(
-        response=df.to_json(orient='records'),
-        status=200,
-        mimetype="application/json")
-
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+    try:
+        df = pd.read_sql('daily_devs', engine).fillna(0)
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
 
 
 @db_blueprint.route('/summary_table', methods=['GET'])
 def get_summary_table():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('summary_table', engine)
+    try:
+        df = pd.read_sql('summary_table', engine)
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
 
-    resp = Response(
-        response=df.to_json(orient='records'),
-        status=200,
-        mimetype="application/json")
-
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
 
 
 @db_blueprint.route('/test', methods=['GET'])
@@ -75,14 +81,17 @@ def test_db():
 @db_blueprint.route('/git_rate_limit', methods=['GET'])
 def get_git_rate_limit():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    df = pd.read_sql('git_rate_limit', engine)
-    df = df[['time', 'rate']]
-    # df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        df = pd.read_sql('git_rate_limit', engine)
+        df = df[['time', 'rate']]
+        # df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
-    resp = Response(
-        response=df.to_json(orient='records'),
-        status=200,
-        mimetype="application/json")
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
 
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
