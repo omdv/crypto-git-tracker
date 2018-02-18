@@ -23,15 +23,15 @@ manager = Manager(app)
 
 def add_one_repo(repo):
     ticker, apihandle, url = repo.split(':')
-    if_exists = db.session.query(
-        RepoControlRecord.id).filter_by(url=url).all() is not None
+    if_exists = len(db.session.query(
+        RepoControlRecord.id).filter_by(url=url).all()) is not 0
     if not if_exists:
         db.session.add(RepoControlRecord(
             ticker=ticker, apihandle=apihandle, url=url))
         print("Repo {} was added".format(url))
+        db.session.commit()
     else:
         print("Repo {} already exists".format(url))
-    db.session.commit()
 
 
 @manager.command

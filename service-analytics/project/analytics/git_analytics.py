@@ -25,9 +25,11 @@ class GitAnalytics():
         _r = requests.get(url)
         try:
             _d = _r.json()[0]
+            return float(_d['price_usd']),\
+                float(_d['market_cap_usd']) / 1.e6, _d['name']
         except KeyError:
-            _d = {'price_usd': 0, 'market_cap_usd': 0}
-        return float(_d['price_usd']), float(_d['market_cap_usd']), _d['name']
+            print('Problem parsing {}'.format(apihandle))
+            return 0, 0, 'ERROR'
 
     """
     Merge series with df under 'name'
@@ -141,10 +143,10 @@ class GitAnalytics():
         # _d2.fillna(0, inplace=True)
         # result = self._merger(result, _d2, 'current_commits_change')
 
-        # # mean number of commits per day since launch
-        # _mean_commits_day = commits_day.apply(
-        #     lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
-        # result = self._merger(result, _mean_commits_day, 'mean_commits_period')
+        # mean number of commits per period since launch
+        _mean_commits_day = commits_day.apply(
+            lambda x: x[x[x != 0].index[0]:].mean(), axis=0)
+        result = self._merger(result, _mean_commits_day, 'mean_commits_period')
 
         # -------------- MARKET DATA --------------
         result[['price', 'market_cap', 'name']] = result['apihandle'].\
