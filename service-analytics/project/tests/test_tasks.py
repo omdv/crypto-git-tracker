@@ -69,17 +69,17 @@ class TestCeleryTasksClass(BaseTestCase):
             response = self.client.get('/commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data['data']['commits']), 42)
+            self.assertEqual(len(data), 42)
 
             response = self.client.get('/daily_commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 76)
+            self.assertEqual(len(data), 12)
 
             response = self.client.get('/daily_devs')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 76)
+            self.assertEqual(len(data), 12)
 
             response = self.client.get('/summary_table')
             data = json.loads(response.data.decode())
