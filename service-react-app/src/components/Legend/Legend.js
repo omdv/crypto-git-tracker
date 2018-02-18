@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { rect } from 'd3-shape'
 import { scaleOrdinal } from 'd3-scale'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 

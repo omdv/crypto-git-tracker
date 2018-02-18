@@ -1,0 +1,2 @@
+svg .data-labels {display: none;}
+svg g:hover .data-labels {display: block;}

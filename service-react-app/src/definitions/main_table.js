@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { Sparklines, SparklinesLine } from 'react-sparklines'
 var numeral = require('numeral')
 

@@ -12,10 +12,11 @@ import {
 
 // Charts
 import TimeSeriesChart from '../../components/TimeSeriesChart/chart'
+import ScatterChart from '../../components/ScatterChart/chart'
 
 // React table
 import ReactTable from 'react-table'
-import SummaryTable from '../../components/SummaryTable/Table'
+import 'react-table/react-table.css'
 import {main_table_columns, main_table_sorting} from '../../definitions/main_table'
 
 // Home container styles
@@ -27,6 +28,7 @@ var _ = require('underscore')
 
 // constants
 const SPARKLINE_DAYS = 52
+const MARGINS = {top: 20, right: 30, bottom: 60, left: 50}
 
 // const Home = props => (
 class Home extends Component {
@@ -143,6 +145,10 @@ class Home extends Component {
       this.setState({ summary_table_data: summary, summary_table_data_loading: false })
       this.setState({ commits_data: commits, commits_data_loading: true })
       this.setState({ devs_data: devs, devs_data_loading: true })
+      
+      // select two coins for illustration
+      this.handleChange(2)
+      this.handleChange(3)
     }))
     .catch((err) => { console.log(err); })
   }
@@ -183,7 +189,7 @@ class Home extends Component {
               hover_enabled={true}
               legend_enabled={true}
               x_accessor={'date'}
-              margins={{top: 20, right: 20, bottom: 60, left: 40}} />
+              margins={ MARGINS } />
           </div>
           <div className="col-md-6">
             <TimeSeriesChart
@@ -193,7 +199,36 @@ class Home extends Component {
               hover_enabled={true}
               legend_enabled={true}
               x_accessor={'date'}
-              margins={{top: 20, right: 20, bottom: 60, left: 40}} />
+              margins={ MARGINS } />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-4">
+            {!summary_table_data_loading && <ScatterChart
+              data = {summary_table_data}
+              x_accessor={'mean_commits_period'}
+              y_accessor={'market_cap'}
+              width={250}
+              height={200}
+              margins={ MARGINS } />}
+          </div>
+          <div className="col-md-4">
+            {!summary_table_data_loading && <ScatterChart
+              data = {summary_table_data}
+              x_accessor={'mean_devs_period'}
+              y_accessor={'market_cap'}
+              width={250}
+              height={200}
+              margins={ MARGINS } />}
+          </div>
+          <div className="col-md-4">
+            {!summary_table_data_loading && <ScatterChart
+              data = {summary_table_data}
+              x_accessor={'developers_ratio'}
+              y_accessor={'market_cap'}
+              width={250}
+              height={200}
+              margins={ MARGINS } />}
           </div>
         </div>
       </div>

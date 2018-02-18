@@ -1,16 +1,11 @@
 import React, { Component } from 'react'
-import { line, curveBasis } from 'd3-shape'
-
 import './HoverLine.css'
 
 
 export default class HoverLine extends Component {
-  constructor(props) {
-    super(props)
-  }
 
   render() {
-    const { xScreen, readings, svgDimensions, margins, scales } = this.props
+    const { readings, svgDimensions, margins, scales } = this.props
     const { height } = svgDimensions
     const { xScale, yScale } = scales
     const { xReadings, yReadings } = readings

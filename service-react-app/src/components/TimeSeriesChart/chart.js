@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { scaleLinear, scaleTime, scalePow } from 'd3-scale'
+import { scaleTime, scalePow } from 'd3-scale'
 import { extent, bisector } from 'd3-array'
 
-import Axes from '../Axes'
+import Axes from './axes'
 import Lines from '../Lines'
 import HoverLine from '../HoverLine'
 import Legend from '../Legend'
