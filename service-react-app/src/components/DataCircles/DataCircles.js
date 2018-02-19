@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import './DataCircles.css'
 
 // import { scaleOrdinal } from 'd3-scale'
@@ -11,51 +11,56 @@ import './DataCircles.css'
 //     this.colorScale = scaleOrdinal(schemeCategory10)
 //   }
 
-//   render() {
-//     const { scales, margins, data, x_accessor, y_accessor } = this.props
-//     const { xScale, yScale } = scales
+export default class DataCircles extends Component {
+  constructor() {
+    super()
+    this.state = {
+      onHover: false,
+      hoverTicker: null
+    }
+    this.renderCircles.bind(this)
+  }
 
+  onItemMouseOver = (posX, posY, ticker, e) => {
+    this.setState({
+      onHover: true,
+      hoverTicker: ticker,
+      hoverX: posX,
+      hoverY: posY-7
+    })
+  }
 
-//     const renderCircles = (props) => {
-//       return (coords, index) => {
-//         const circleProps = {
-//           cx: props.scales.xScale(props.data[x_accessor]),
-//           cy: props.scales.yScale(props.data[y_accessor]),
-//           r: 2,
-//           key: index
-//         };
-//         return <circle {...circleProps} />;
-//       };
-//     };
+  onItemMouseOut = (e) => {
+    this.setState({onHover: false})
+  }
 
-//   }
-// }
+  renderCircles = (props) => {
+    const {onHover, hoverTicker, hoverX, hoverY} = this.state
+    return (coords, index) => {
+      const posX = props.scales.xScale(coords[props.xAccessor])
+      const posY = props.scales.yScale(coords[props.yAccessor])
+      const ticker = coords['ticker']
+      const circleProps = {
+        cx: posX,
+        cy: posY,
+        r: 4,
+        key: index,
+        stroke: "blue",
+        fill: "red"
+      };
+      return <g key={`group-${index}`}
+          onMouseOver={this.onItemMouseOver.bind(this, posX, posY, ticker)}
+          onMouseOut={this.onItemMouseOut.bind(this)}>
+        <circle {...circleProps}/>
+        {onHover && <text
+          x={hoverX}
+          y={hoverY}
+          key={`text-${index}`}>{hoverTicker}</text>}
+      </g>
+    }
+  }
 
-const mouseOver = (e) => {
-  console.log(e)
-}
-
-const mouseOut = (e) => {
-  console.log(e)
-}
-
-const renderCircles = (props) => {
-  return (coords, index) => {
-    const circleProps = {
-      cx: props.scales.xScale(coords[props.x_accessor]),
-      cy: props.scales.yScale(coords[props.y_accessor]),
-      r: 6,
-      key: index,
-      stroke: "blue",
-      fill: "red"
-    };
-    return <g onMouseOver={mouseOver} onMouseOut={mouseOut} key={index}>
-      <circle {...circleProps} />
-      <text x={circleProps.cx} y={circleProps.cy} className="data-labels">{coords['ticker']}</text>
-    </g>;
-  };
-};
-
-export default (props) => {
-  return <g>{ props.data.map(renderCircles(props)) }</g>
+  render() {
+    return <g>{ this.props.data.map(this.renderCircles(this.props)) }</g>
+  }
 }

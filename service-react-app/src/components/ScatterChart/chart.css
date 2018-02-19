@@ -2,3 +2,5 @@
 	stroke: "blue";
 	fill: "red";
 }
+
+svg {cursor: crosshair;}

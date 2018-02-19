@@ -18,7 +18,9 @@ psycopg2==2.7.1
 python-dateutil==2.6.1
 pytz==2017.3
 requests==2.18.4
+scipy==1.0.0
 six==1.11.0
+scikit-learn==0.19.1
 SQLAlchemy==1.1.15
 Werkzeug==0.12.2
 gunicorn==19.7.1

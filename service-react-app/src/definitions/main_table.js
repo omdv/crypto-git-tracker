@@ -7,9 +7,9 @@ export let main_table_columns = [{
     Cell: ({ row, original }) => <a href={"https://coinmarketcap.com/currencies/"+original.apihandle}>{original.name}</a>,
     minWidth: 80
   }, {
-    Header: 'Market Cap',
+    Header: 'Market Cap $M',
     accessor: 'market_cap',
-    Cell: props => <p>{numeral(props.value).format('$ 0.000 a').toUpperCase()}</p>
+    Cell: props => <p>{numeral(props.value).format('$ 0,0').toUpperCase()}</p>
   }, {
     Header: 'Price',
     accessor: 'price',

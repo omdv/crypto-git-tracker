@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { scaleOrdinal } from 'd3-scale'
-import { line, curveBasis } from 'd3-shape'
+import { line } from 'd3-shape'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 
 export default class Lines extends Component {
@@ -10,7 +10,7 @@ export default class Lines extends Component {
   }
 
   render() {
-    const { scales, margins, data, x_accessor } = this.props
+    const { scales, margins, data, xAccessor } = this.props
     const { xScale, yScale } = scales
 
     const items = Object.keys(data[0]).slice(1)
@@ -18,7 +18,7 @@ export default class Lines extends Component {
     // define lines for each item
     const lines = items.map((item, i) => line()
       // .curve(curveBasis)
-      .x(function(d) { return xScale(d[x_accessor]) })
+      .x(function(d) { return xScale(d[xAccessor]) })
       .y(function(d) { return yScale(d[item]) }))
 
     // define paths

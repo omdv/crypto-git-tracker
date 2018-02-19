@@ -18,13 +18,14 @@ export default ({ scales, margins, svgDimensions }) => {
     scale: scales.yScale,
     translate: `translate(${margins.left}, 0)`,
     tickSize: 5,
-    ticks: [8]
+    ticks: [3]
   }
 
   return (
     <g>
-      <Axis {...yProps} />
       <Axis {...xProps} />
+      <Axis {...yProps} />
     </g>
   )
 }
+

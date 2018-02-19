@@ -2,6 +2,7 @@ import requests
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
+from sklearn.neighbors import LocalOutlierFactor
 
 # define constants
 DEVELOPER_COMMITS = 5
@@ -153,6 +154,13 @@ class GitAnalytics():
             apply(self._download_market_info).\
             apply(pd.Series)
 
+        # normalized data
+        result['avg_commits_per_market_cap'] =\
+            result['mean_commits_period'] / result['market_cap'] * 1000
+
+        result['avg_devs_per_market_cap'] =\
+            result['mean_devs_period'] / result['market_cap'] * 1000
+
         # -------------- REPOS DATA --------------
         _rc = df.groupby(['ticker']).repo.nunique().reset_index()
         _rc.rename(columns={'repo': 'repo_count'}, inplace=True)
@@ -163,6 +171,15 @@ class GitAnalytics():
         _rp.rename(columns={'repo': 'repos'}, inplace=True)
         _rp['repos'] = _rp['repos'].apply(",".join)
         result = pd.merge(result, _rp, how='left', on='ticker')
+
+        # -------------- OUTLIERS --------------
+        X = result[[
+            'mean_commits_period',
+            'mean_devs_period',
+            'market_cap']].values
+        X[:, 2] = np.log1p(X[:, 2])
+        lof = LocalOutlierFactor().fit(X)
+        result['lof_outlier'] = lof.fit_predict(X)
 
         # -------------- SQL --------------
         commits_day_ma.reset_index(inplace=True)

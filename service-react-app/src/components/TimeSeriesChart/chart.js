@@ -6,6 +6,7 @@ import Axes from './axes'
 import Lines from '../Lines'
 import HoverLine from '../HoverLine'
 import Legend from '../Legend'
+import Labels from '../Labels'
 import ResponsiveWrapper from '../ResponsiveWrapper'
 
 var _ = require('underscore')
@@ -27,11 +28,11 @@ class TimeSeriesChart extends Component {
   }
 
   _onMouseMove(e) {
-    const x_accessor = this.props.x_accessor
+    const xAccessor = this.props.xAccessor
     // helpers
     const { data } = this.props
     const categories = Object.keys(data[0]).slice(1)
-    let bisectDate = bisector(function(d) { return d[x_accessor]; }).right;
+    let bisectDate = bisector(function(d) { return d[xAccessor]; }).right;
     let hoverActive = true
 
     // initiate
@@ -50,7 +51,7 @@ class TimeSeriesChart extends Component {
 
     // get x and y within try block
     try {
-      xReadings = data[dataIdx][x_accessor]
+      xReadings = data[dataIdx][xAccessor]
       yReadings = _.pick(data[dataIdx], categories)
     }
     catch(err) {
@@ -67,7 +68,7 @@ class TimeSeriesChart extends Component {
   }
 
   render() {
-    const { data, margins, x_accessor } = this.props
+    const { data, margins, xAccessor } = this.props
     const { hover_enabled, legend_enabled } = this.props
     const { xScreen, xReadings, yReadings, hoverActive } = this.state
     const svgDimensions = {
@@ -82,7 +83,7 @@ class TimeSeriesChart extends Component {
     // define scales
     const xScale = this.xScale
       .range([margins.left, svgDimensions.width - margins.right])
-      .domain(extent(data, function(d) { return d[x_accessor] }))
+      .domain(extent(data, function(d) { return d[xAccessor] }))
 
     const yScale = this.yScale
       .exponent(0.5)
@@ -104,7 +105,13 @@ class TimeSeriesChart extends Component {
           scales={{ xScale, yScale }}
           margins={margins}
           data={data}
-          x_accessor={x_accessor}/>
+          xAccessor={xAccessor}/>
+        <Labels
+          margins={margins}
+          width={svgDimensions.width}
+          height={svgDimensions.height}
+          xLabel={this.props.xLabel}
+          yLabel={this.props.yLabel} />
         {(hover_enabled & hoverActive) && <HoverLine
           scales={{ xScale, yScale }}
           margins={margins}

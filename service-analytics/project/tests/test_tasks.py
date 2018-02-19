@@ -44,21 +44,23 @@ class TestCeleryTasksClass(BaseTestCase):
     def test_celery_tasks(self):
         add_repo(ticker='BTC', apihandle='bitcoin',
                  url='omdv/robinhood-portfolio')
+        add_repo(ticker='ETH', apihandle='ethereum',
+                 url='omdv/openai-gym-agents')
         repos = RepoControlRecord.query.all()
-        self.assertEqual(len(repos), 1)
+        self.assertEqual(len(repos), 2)
 
         # first call
         result = call_watcher_task(repos)
-        self.assertEqual(result, 'Updated 1 of 1')
+        self.assertEqual(result, 'Updated 2 of 2')
         commits = Commit.query.all()
-        self.assertEqual(len(commits), 42)
+        self.assertEqual(len(commits), 56)
 
         # second call
         repos = RepoControlRecord.query.all()
         result = call_watcher_task(repos)
-        self.assertEqual(result, 'Updated 0 of 1')
+        self.assertEqual(result, 'Updated 0 of 2')
         commits = Commit.query.all()
-        self.assertEqual(len(commits), 42)
+        self.assertEqual(len(commits), 56)
 
         # call summary
         df = call_summary_task(current_app.config)
@@ -69,20 +71,20 @@ class TestCeleryTasksClass(BaseTestCase):
             response = self.client.get('/commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 42)
+            self.assertEqual(len(data), 56)
 
             response = self.client.get('/daily_commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 12)
+            self.assertEqual(len(data), 65)
 
             response = self.client.get('/daily_devs')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 12)
+            self.assertEqual(len(data), 65)
 
             response = self.client.get('/summary_table')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 1)
+            self.assertEqual(len(data), 2)
             self.assertIn('omdv', data[0]['monthly_mvp'])

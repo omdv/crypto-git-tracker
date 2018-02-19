@@ -2289,3 +2289,72 @@
 2018-02-18 04:23:03,436 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2018-02-18 04:23:03,437 INFO success: flower entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2018-02-18 04:23:03,438 INFO success: celerybeat entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 15:44:28,160 WARN received SIGTERM indicating exit request
+2018-02-18 15:44:28,178 INFO waiting for celeryworker, python, flower, celerybeat to die
+2018-02-18 15:44:31,187 INFO waiting for celeryworker, python, flower, celerybeat to die
+2018-02-18 15:44:31,446 INFO stopped: celerybeat (exit status 0)
+2018-02-18 15:44:34,117 INFO stopped: flower (exit status 1)
+2018-02-18 15:44:35,120 INFO waiting for celeryworker, python to die
+2018-02-18 15:44:36,538 INFO stopped: python (exit status 0)
+2018-02-18 15:44:40,884 CRIT Supervisor running as root (no user in config file)
+2018-02-18 15:44:40,895 INFO supervisord started with pid 1
+2018-02-18 15:44:41,897 INFO spawned: 'celeryworker' with pid 7
+2018-02-18 15:44:41,899 INFO spawned: 'python' with pid 8
+2018-02-18 15:44:41,907 INFO spawned: 'flower' with pid 9
+2018-02-18 15:44:42,053 INFO spawned: 'celerybeat' with pid 10
+2018-02-18 15:44:43,060 INFO success: celeryworker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 15:44:43,061 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 15:44:43,061 INFO success: flower entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 15:44:43,062 INFO success: celerybeat entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 16:31:15,230 WARN received SIGTERM indicating exit request
+2018-02-18 16:31:15,231 INFO waiting for celeryworker, python, flower, celerybeat to die
+2018-02-18 16:31:15,418 INFO stopped: celerybeat (exit status 0)
+2018-02-18 16:31:15,625 INFO stopped: flower (exit status 1)
+2018-02-18 16:31:15,857 INFO stopped: python (exit status 0)
+2018-02-18 16:31:18,246 INFO waiting for celeryworker to die
+2018-02-18 16:31:21,392 INFO waiting for celeryworker to die
+2018-02-18 16:31:24,463 INFO waiting for celeryworker to die
+2018-02-18 16:31:24,673 INFO stopped: celeryworker (exit status 0)
+2018-02-18 16:31:26,640 CRIT Supervisor running as root (no user in config file)
+2018-02-18 16:31:26,645 INFO supervisord started with pid 1
+2018-02-18 16:31:27,652 INFO spawned: 'celeryworker' with pid 7
+2018-02-18 16:31:27,656 INFO spawned: 'python' with pid 8
+2018-02-18 16:31:27,661 INFO spawned: 'flower' with pid 9
+2018-02-18 16:31:27,663 INFO spawned: 'celerybeat' with pid 10
+2018-02-18 16:31:28,671 INFO success: celeryworker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 16:31:28,671 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 16:31:28,672 INFO success: flower entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 16:31:28,673 INFO success: celerybeat entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 17:02:23,972 WARN received SIGTERM indicating exit request
+2018-02-18 17:02:23,973 INFO waiting for celeryworker, python, flower, celerybeat to die
+2018-02-18 17:02:24,276 INFO stopped: celerybeat (exit status 0)
+2018-02-18 17:02:24,460 INFO stopped: flower (exit status 1)
+2018-02-18 17:02:24,682 INFO stopped: python (exit status 0)
+2018-02-18 17:02:26,452 INFO stopped: celeryworker (exit status 0)
+2018-02-18 17:02:28,691 CRIT Supervisor running as root (no user in config file)
+2018-02-18 17:02:28,698 INFO supervisord started with pid 1
+2018-02-18 17:02:29,701 INFO spawned: 'celeryworker' with pid 7
+2018-02-18 17:02:29,706 INFO spawned: 'python' with pid 8
+2018-02-18 17:02:29,709 INFO spawned: 'flower' with pid 9
+2018-02-18 17:02:29,712 INFO spawned: 'celerybeat' with pid 10
+2018-02-18 17:02:30,715 INFO success: celeryworker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 17:02:30,717 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 17:02:30,718 INFO success: flower entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 17:02:30,719 INFO success: celerybeat entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 04:25:53,010 WARN received SIGTERM indicating exit request
+2018-02-19 04:25:53,031 INFO waiting for celeryworker, python, flower, celerybeat to die
+2018-02-19 04:25:54,244 INFO stopped: celerybeat (exit status 0)
+2018-02-19 04:25:54,809 INFO stopped: flower (exit status 1)
+2018-02-19 04:25:55,431 INFO stopped: python (exit status 0)
+2018-02-19 04:25:56,434 INFO waiting for celeryworker to die
+2018-02-19 04:25:57,588 INFO stopped: celeryworker (exit status 0)
+2018-02-19 04:26:00,306 CRIT Supervisor running as root (no user in config file)
+2018-02-19 04:26:00,313 INFO supervisord started with pid 1
+2018-02-19 04:26:01,317 INFO spawned: 'celeryworker' with pid 7
+2018-02-19 04:26:01,320 INFO spawned: 'python' with pid 8
+2018-02-19 04:26:01,322 INFO spawned: 'flower' with pid 9
+2018-02-19 04:26:01,325 INFO spawned: 'celerybeat' with pid 10
+2018-02-19 04:26:02,327 INFO success: celeryworker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 04:26:02,329 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 04:26:02,330 INFO success: flower entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 04:26:02,331 INFO success: celerybeat entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

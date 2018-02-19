@@ -23,12 +23,13 @@ import {main_table_columns, main_table_sorting} from '../../definitions/main_tab
 import './index.css'
 
 // underscore
-var _ = require('underscore')
+// var _ = require('underscore')
 
 
 // constants
 const SPARKLINE_DAYS = 52
-const MARGINS = {top: 20, right: 30, bottom: 60, left: 50}
+const MAX_SELECTED_COINS = 5
+const MARGINS = {top: 20, right: 30, bottom: 60, left: 60}
 
 // const Home = props => (
 class Home extends Component {
@@ -55,12 +56,26 @@ class Home extends Component {
   
   componentDidMount() {
     this.getAndPrepareData()
+    // select two coins for illustration
+    // this.handleChange(2)
+    // this.handleChange(3)
+  }
+
+  initGraphs() {
+    this.handleChange(2)
+    this.handleChange(3)
   }
 
   handleChange(idx) {
     const { summary_table_data, selected_coins } = this.state
     const { commits_data, devs_data } = this.state
-    selected_coins.has(idx) ? selected_coins.delete(idx) : selected_coins.add(idx)
+
+    if (selected_coins.has(idx)) {
+      selected_coins.delete(idx)
+    } else if (selected_coins.size < MAX_SELECTED_COINS) {
+      // TODO: show warning
+      selected_coins.add(idx)
+    }
 
     let coins = Array.from(selected_coins).map(e => summary_table_data[e].ticker)
     
@@ -117,45 +132,35 @@ class Home extends Component {
       // create sparklines for commits
       let _s_commits = commits.slice(commits.length - SPARKLINE_DAYS)
       summary.map((d,i) => {
-        d['sparkline_commits'] = _s_commits.map(s => s[d.ticker])
+        return d['sparkline_commits'] = _s_commits.map(s => s[d.ticker])
       })
 
       // create sparklines for devs
       let _s_devs = devs.slice(devs.length - SPARKLINE_DAYS)
       summary.map((d,i) => {
-        d['sparkline_devs'] = _s_devs.map(s => s[d.ticker])
+        return d['sparkline_devs'] = _s_devs.map(s => s[d.ticker])
       })
-
-      // // merge today_commits with change
-      // summary.map(d => {
-      //   d['today_commits_merged']=`${d.today_commits.toFixed(2)} (${d.today_commits_change > 0 ? '+': ''}${d.today_commits_change.toFixed(2)}%)`
-      // })
-
-      // // merge daily_devs with change
-      // summary.map(d => {
-      //   d['today_devs_merged']=`${d.today_devs.toFixed(2)} (${d.today_devs_change > 0 ? '+': ''}${d.today_devs_change.toFixed(2)}%)`
-      // })
 
       // merge contributors with ratio
       summary.map(d => {
-        d['developers']=`${d.unique_contributors} (${d.developers_ratio.toFixed(2)}% > 5)`
+        return d['developers']=`${d.unique_contributors} (${d.developers_ratio.toFixed(2)}% > 5)`
       })
 
       // export variables
-      this.setState({ summary_table_data: summary, summary_table_data_loading: false })
-      this.setState({ commits_data: commits, commits_data_loading: true })
-      this.setState({ devs_data: devs, devs_data_loading: true })
-      
-      // select two coins for illustration
-      this.handleChange(2)
-      this.handleChange(3)
+      this.setState(
+        { summary_table_data: summary,
+          summary_table_data_loading: false,
+          commits_data: commits,
+          commits_data_loading: true,
+          devs_data: devs,
+          devs_data_loading: true
+         }, this.initGraphs)
     }))
     .catch((err) => { console.log(err); })
   }
 
   render () {
     const { selected_commits, selected_devs } = this.state
-    const { commits_data } = this.state
     const { summary_table_data, summary_table_data_loading } = this.state
     return (
       <div className="container">
@@ -188,8 +193,9 @@ class Home extends Component {
               height={300}
               hover_enabled={true}
               legend_enabled={true}
-              x_accessor={'date'}
-              margins={ MARGINS } />
+              xAccessor={'date'}
+              margins={ MARGINS }
+              yLabel={'Commits/week'} />
           </div>
           <div className="col-md-6">
             <TimeSeriesChart
@@ -198,36 +204,32 @@ class Home extends Component {
               height={300}
               hover_enabled={true}
               legend_enabled={true}
-              x_accessor={'date'}
-              margins={ MARGINS } />
+              xAccessor={'date'}
+              margins={ MARGINS }
+              yLabel={'Developers/week'} />
           </div>
         </div>
         <div className="row">
-          <div className="col-md-4">
+          <div className="col-md-6">
             {!summary_table_data_loading && <ScatterChart
               data = {summary_table_data}
-              x_accessor={'mean_commits_period'}
-              y_accessor={'market_cap'}
+              xAccessor={'mean_commits_period'}
+              yAccessor={'market_cap'}
+              xLabel={'Commits/week'}
+              yLabel={'Market Cap $M'}
               width={250}
-              height={200}
+              height={250}
               margins={ MARGINS } />}
           </div>
-          <div className="col-md-4">
+          <div className="col-md-6">
             {!summary_table_data_loading && <ScatterChart
               data = {summary_table_data}
-              x_accessor={'mean_devs_period'}
-              y_accessor={'market_cap'}
+              xAccessor={'mean_devs_period'}
+              yAccessor={'market_cap'}
+              xLabel={'Developers/week'}
+              yLabel={'Market Cap $M'}
               width={250}
-              height={200}
-              margins={ MARGINS } />}
-          </div>
-          <div className="col-md-4">
-            {!summary_table_data_loading && <ScatterChart
-              data = {summary_table_data}
-              x_accessor={'developers_ratio'}
-              y_accessor={'market_cap'}
-              width={250}
-              height={200}
+              height={250}
               margins={ MARGINS } />}
           </div>
         </div>
