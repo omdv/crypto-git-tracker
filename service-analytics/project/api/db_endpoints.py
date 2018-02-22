@@ -10,23 +10,23 @@ from sqlalchemy import create_engine
 db_blueprint = Blueprint('db', __name__)
 
 
+# @db_blueprint.route('/commits', methods=['GET'])
+# def get_all_commits():
+#     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+#     try:
+#         df = pd.read_sql('commits', engine)
+#         resp = Response(
+#             response=df.to_json(orient='records'),
+#             status=200,
+#             mimetype="application/json")
+
+#         resp.headers['Access-Control-Allow-Origin'] = '*'
+#         return resp
+#     except:
+#         return Response(response=None, status=400)
+
+
 @db_blueprint.route('/commits', methods=['GET'])
-def get_all_commits():
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    try:
-        df = pd.read_sql('commits', engine)
-        resp = Response(
-            response=df.to_json(orient='records'),
-            status=200,
-            mimetype="application/json")
-
-        resp.headers['Access-Control-Allow-Origin'] = '*'
-        return resp
-    except:
-        return Response(response=None, status=400)
-
-
-@db_blueprint.route('/daily_commits', methods=['GET'])
 def get_daily_commits():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     try:
@@ -42,7 +42,7 @@ def get_daily_commits():
         return Response(response=None, status=400)
 
 
-@db_blueprint.route('/daily_devs', methods=['GET'])
+@db_blueprint.route('/developers', methods=['GET'])
 def get_daily_devs():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     try:

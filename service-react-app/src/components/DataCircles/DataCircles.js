@@ -1,16 +1,6 @@
 import React, { Component } from 'react'
 import './DataCircles.css'
 
-// import { scaleOrdinal } from 'd3-scale'
-// import { symbol } from 'd3-shape'
-// import { schemeCategory10 } from 'd3-scale-chromatic'
-
-// export default class Points extends Component {
-//   constructor(props) {
-//     super(props)
-//     this.colorScale = scaleOrdinal(schemeCategory10)
-//   }
-
 export default class DataCircles extends Component {
   constructor() {
     super()
@@ -40,13 +30,19 @@ export default class DataCircles extends Component {
       const posX = props.scales.xScale(coords[props.xAccessor])
       const posY = props.scales.yScale(coords[props.yAccessor])
       const ticker = coords['ticker']
+      let fill = "rgb(188, 189, 34)"
+      if (coords[props.outlierAccessorPos] === 1) {
+        fill = "rgb(23, 190, 207)"
+      } else if (coords[props.outlierAccessorNeg] === 1) {
+        fill = "rgb(214, 39, 40)"
+      }
       const circleProps = {
         cx: posX,
         cy: posY,
         r: 4,
         key: index,
         stroke: "blue",
-        fill: "red"
+        fill: fill
       };
       return <g key={`group-${index}`}
           onMouseOver={this.onItemMouseOver.bind(this, posX, posY, ticker)}

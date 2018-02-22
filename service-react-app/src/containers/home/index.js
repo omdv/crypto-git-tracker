@@ -22,16 +22,13 @@ import {main_table_columns, main_table_sorting} from '../../definitions/main_tab
 // Home container styles
 import './index.css'
 
-// underscore
-// var _ = require('underscore')
-
 
 // constants
 const SPARKLINE_DAYS = 52
 const MAX_SELECTED_COINS = 5
 const MARGINS = {top: 20, right: 30, bottom: 60, left: 60}
 
-// const Home = props => (
+
 class Home extends Component {
   constructor() {
     super()
@@ -56,9 +53,6 @@ class Home extends Component {
   
   componentDidMount() {
     this.getAndPrepareData()
-    // select two coins for illustration
-    // this.handleChange(2)
-    // this.handleChange(3)
   }
 
   initGraphs() {
@@ -116,8 +110,8 @@ class Home extends Component {
   getAndPrepareData() {
     axios.all([
       axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/summary_table`),
-      axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/daily_commits`),
-      axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/daily_devs`),
+      axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/commits`),
+      axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/developers`),
     ])
     .then(axios.spread((r_summary, r_commits, r_devs) => {
       // process data
@@ -215,7 +209,9 @@ class Home extends Component {
               data = {summary_table_data}
               xAccessor={'mean_commits_period'}
               yAccessor={'market_cap'}
-              xLabel={'Commits/week'}
+              outlierAccessorPos={'commits_ratio_90'}
+              outlierAccessorNeg={'commits_ratio_10'}
+              xLabel={'Commits per week'}
               yLabel={'Market Cap $M'}
               width={250}
               height={250}
@@ -226,7 +222,9 @@ class Home extends Component {
               data = {summary_table_data}
               xAccessor={'mean_devs_period'}
               yAccessor={'market_cap'}
-              xLabel={'Developers/week'}
+              outlierAccessorPos={'devs_ratio_90'}
+              outlierAccessorNeg={'devs_ratio_10'}
+              xLabel={'Developers per week'}
               yLabel={'Market Cap $M'}
               width={250}
               height={250}
@@ -238,37 +236,4 @@ class Home extends Component {
   }
 }
 
-
-// <h1>Home</h1>
-// <p>Count3: {this.props.count}</p>
-
-// <p>
-//   <button onClick={this.props.increment} disabled={this.props.isIncrementing}>Increment</button>
-//   <button onClick={this.props.incrementAsync} disabled={this.props.isIncrementing}>Increment Async</button>
-// </p>
-
-// <p>
-//   <button onClick={this.props.decrement} disabled={this.props.isDecrementing}>Decrementing</button>
-//   <button onClick={this.props.decrementAsync} disabled={this.props.isDecrementing}>Decrement Async</button>
-// </p>
-
-// <p><button onClick={() => this.props.changePage()}>Go to about page via redux</button></p>
-
-const mapStateToProps = state => ({
-  count: state.counter.count,
-  isIncrementing: state.counter.isIncrementing,
-  isDecrementing: state.counter.isDecrementing
-})
-
-const mapDispatchToProps = dispatch => bindActionCreators({
-  increment,
-  incrementAsync,
-  decrement,
-  decrementAsync,
-  changePage: () => push('/about-us')
-}, dispatch)
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Home)
+export default Home

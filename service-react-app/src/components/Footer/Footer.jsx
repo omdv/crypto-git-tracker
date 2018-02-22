@@ -3,8 +3,9 @@ import './Footer.css'
 
 export default () =>
   <footer className="Footer">
-    <p>
-      Created by omdv -{' '}
-      <a href="https://github.com/omdv">GitHub</a>
-    </p>
+  	<div className="row">
+	    <p>
+	      <a href="https://github.com/omdv">Source Code</a>
+	    </p>
+    </div>
   </footer>

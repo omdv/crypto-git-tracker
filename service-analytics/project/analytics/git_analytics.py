@@ -173,13 +173,27 @@ class GitAnalytics():
         result = pd.merge(result, _rp, how='left', on='ticker')
 
         # -------------- OUTLIERS --------------
-        X = result[[
-            'mean_commits_period',
-            'mean_devs_period',
-            'market_cap']].values
-        X[:, 2] = np.log1p(X[:, 2])
-        lof = LocalOutlierFactor().fit(X)
-        result['lof_outlier'] = lof.fit_predict(X)
+        # X = result[[
+        #     'mean_commits_period',
+        #     'market_cap']].values
+        # X[:, 1] = np.log1p(X[:, 1])
+        # lof = LocalOutlierFactor().fit(X)
+        # result['lof_outlier_commits'] = lof.fit_predict(X)
+
+        # X = result[[
+        #     'mean_devs_period',
+        #     'market_cap']].values
+        # X[:, 1] = np.log1p(X[:, 1])
+        # lof = LocalOutlierFactor().fit(X)
+        # result['lof_outlier_devs'] = lof.fit_predict(X)
+
+        X = result['avg_commits_per_market_cap'].values
+        result['commits_ratio_90'] = (X > np.percentile(X, 90)).astype('int')
+        result['commits_ratio_10'] = (X < np.percentile(X, 10)).astype('int')
+
+        X = result['avg_devs_per_market_cap'].values
+        result['devs_ratio_90'] = (X > np.percentile(X, 90)).astype('int')
+        result['devs_ratio_10'] = (X < np.percentile(X, 10)).astype('int')
 
         # -------------- SQL --------------
         commits_day_ma.reset_index(inplace=True)

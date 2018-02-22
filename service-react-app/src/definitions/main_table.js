@@ -13,16 +13,24 @@ export let main_table_columns = [{
   }, {
     Header: 'Price',
     accessor: 'price',
-    Cell: props => <p>{numeral(props.value).format('$0,0.00').toUpperCase()}</p>
+    Cell: props => <p>{numeral(props.value).format('$0,0.00').toUpperCase()}</p>,
+    maxWidth: 90
   }, {
     Header: 'Age, days',
-    accessor: 'days_since_launch'
+    accessor: 'days_since_launch',
+    maxWidth: 70
   }, {
     Header: 'Commits',
-    accessor: 'number_of_commits'
+    accessor: 'number_of_commits',
+    maxWidth: 70
   }, {
     Header: 'Avg/week',
     accessor: 'mean_commits_period',
+    Cell: props => <p>{props.value.toFixed(2)}</p>,
+    maxWidth: 70
+  }, { 
+    Header: '../market',
+    accessor: 'avg_commits_per_market_cap',
     Cell: props => <p>{props.value.toFixed(2)}</p>,
     maxWidth: 70
   }, {
@@ -44,6 +52,11 @@ export let main_table_columns = [{
   }, {
     Header: 'Avg/week',
     accessor: 'mean_devs_period',
+    Cell: props => <p>{props.value.toFixed(2)}</p>,
+    maxWidth: 70
+  }, {
+    Header: '../market',
+    accessor: 'avg_devs_per_market_cap',
     Cell: props => <p>{props.value.toFixed(2)}</p>,
     maxWidth: 70
   }, {

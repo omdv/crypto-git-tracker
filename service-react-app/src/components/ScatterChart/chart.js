@@ -44,7 +44,9 @@ class ScatterChart extends Component {
           margins={ margins }
           data={ data }
           xAccessor={ xAccessor }
-          yAccessor={ yAccessor }/>
+          yAccessor={ yAccessor }
+          outlierAccessorPos = { this.props.outlierAccessorPos }
+          outlierAccessorNeg = { this.props.outlierAccessorNeg } />
         <Labels
           margins={margins}
           width={svgDimensions.width}

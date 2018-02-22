@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.3'
 
 services:
 
@@ -7,8 +7,8 @@ services:
     build:
       context: ./service-db
       dockerfile: Dockerfile
-    ports:
-        - 5435:5432  # expose ports - HOST:CONTAINER
+    expose:
+        - 5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -19,34 +19,53 @@ services:
     container_name: analytics
     build:
       context: ./service-analytics/
-      dockerfile: Dockerfile-prod
-    volumes:
-      - './service-analytics:/usr/src/app'
-    ports:
+      dockerfile: Dockerfile
+    expose:
       - 5000
+      - 5555
     environment:
-      - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_dev
+      - APP_SETTINGS=project.config.ProductionConfig
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_prod
       - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
-      - SECRET_KEY=my_long_secure_key
+      - SECRET_KEY=${SECRET_KEY}
+      - GIT_TOKEN=${GIT_TOKEN}
+      - GIT_USER=omdv
     depends_on:
       - database
+      - redis
     links:
+      - redis
       - database
-    secrets:
-     - my_git_secret
+
+  client:
+    container_name: client
+    build:
+      context: ./service-react-app
+      dockerfile: Dockerfile-prod
+    expose:
+      - 80
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
+    depends_on:
+      - analytics
+    links:
+      - analytics
 
   nginx:
     container_name: nginx
-    build: ./nginx/
+    build: ./service-nginx/
     restart: always
     ports:
       - 80:80
     depends_on:
       - analytics
+      - client
     links:
       - analytics
 
-secrets:
-  my_git_secret:
-    file: ./gitsecret.key
+  redis:
+    container_name: redis
+    image: redis:latest
+    expose:
+      - 6379

@@ -14,11 +14,10 @@ ADD ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
 # add app
-ADD . /usr/src/app
+COPY . /usr/src/app
 
 # force celery to accept root inside docker
 ENV C_FORCE_ROOT=1
 
 # run supervisord
 CMD ["/usr/bin/supervisord"]
-# CMD python manage.py runserver -h 0.0.0.0
