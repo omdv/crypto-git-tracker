@@ -5,6 +5,7 @@ import { extent } from 'd3-array'
 import Axes from './axes'
 import DataCircles from '../DataCircles'
 import Labels from '../Labels'
+import LegendScatter from '../LegendScatter'
 import ResponsiveWrapper from '../ResponsiveWrapper'
 
 import './chart.css'
@@ -53,6 +54,9 @@ class ScatterChart extends Component {
           height={svgDimensions.height}
           xLabel={this.props.xLabel}
           yLabel={this.props.yLabel} />
+        <LegendScatter
+          xPos = {svgDimensions.width - margins.left*1.5}
+          yPos = {svgDimensions.height - margins.bottom*1.5} />
       </svg>
     )
   }

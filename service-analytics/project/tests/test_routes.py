@@ -42,7 +42,7 @@ class TestAnalyticsService(BaseTestCase):
             repo='repo/repo',
             url='url')
         with self.client:
-            response = self.client.get('/commits')
+            response = self.client.get('/all_commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(data), 2)

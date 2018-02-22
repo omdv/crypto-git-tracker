@@ -22,26 +22,27 @@ class BaseConfig:
             'default_timeout': 60 * 60
         }
     }
-    CELERYBEAT_SCHEDULE = {
-        'watcher': {
-            'task': 'task_watcher',
-            'schedule': timedelta(seconds=180)
-        },
-        'summary': {
-            'task': 'task_summary',
-            'schedule': timedelta(seconds=180)
-        },
-        'rate_limit': {
-            'task': 'task_rate_limit',
-            'schedule': timedelta(seconds=180)
-        }
-    }
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    TIME_DELTA = 30
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'rate_limit': {
+            'task': 'task_rate_limit',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        }
+    }
 
 
 class TestingConfig(BaseConfig):
@@ -49,9 +50,39 @@ class TestingConfig(BaseConfig):
     DEBUG = True
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_TEST_URL')
+    TIME_DELTA = 10
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'rate_limit': {
+            'task': 'task_rate_limit',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        }
+    }
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    TIME_DELTA = 180
+    CELERYBEAT_SCHEDULE = {
+        'watcher': {
+            'task': 'task_watcher',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'summary': {
+            'task': 'task_summary',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        },
+        'rate_limit': {
+            'task': 'task_rate_limit',
+            'schedule': timedelta(seconds=TIME_DELTA)
+        }
+    }

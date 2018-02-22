@@ -1,14 +1,5 @@
 import React, { Component } from 'react'
-import { push } from 'react-router-redux'
-import { bindActionCreators } from 'redux'
-import { connect } from 'react-redux'
 import axios from 'axios'
-import {
-  increment,
-  incrementAsync,
-  decrement,
-  decrementAsync
-} from '../../modules/counter'
 
 // Charts
 import TimeSeriesChart from '../../components/TimeSeriesChart/chart'
@@ -21,7 +12,6 @@ import {main_table_columns, main_table_sorting} from '../../definitions/main_tab
 
 // Home container styles
 import './index.css'
-
 
 // constants
 const SPARKLINE_DAYS = 52
@@ -133,11 +123,6 @@ class Home extends Component {
       let _s_devs = devs.slice(devs.length - SPARKLINE_DAYS)
       summary.map((d,i) => {
         return d['sparkline_devs'] = _s_devs.map(s => s[d.ticker])
-      })
-
-      // merge contributors with ratio
-      summary.map(d => {
-        return d['developers']=`${d.unique_contributors} (${d.developers_ratio.toFixed(2)}% > 5)`
       })
 
       // export variables

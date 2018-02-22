@@ -68,17 +68,17 @@ class TestCeleryTasksClass(BaseTestCase):
         self.assertEqual(100, df['developers_ratio'].values[0])
 
         with self.client:
-            response = self.client.get('/commits')
+            response = self.client.get('/all_commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(data), 56)
 
-            response = self.client.get('/daily_commits')
+            response = self.client.get('/commits')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(data), 65)
 
-            response = self.client.get('/daily_devs')
+            response = self.client.get('/developers')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(data), 65)

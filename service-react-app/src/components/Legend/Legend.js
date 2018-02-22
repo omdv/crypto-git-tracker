@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import { scaleOrdinal } from 'd3-scale'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 
-import './Legend.css'
-
 const legendLineLength = 20
 const textLineHeight = 15
 const margin = {top: 25, left: 10}
