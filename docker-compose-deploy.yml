@@ -6,6 +6,10 @@ services:
       context: ./service-db
       dockerfile: Dockerfile
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role != manager]
       restart_policy:
         condition: on-failure
     image: omdv/crypto-database
@@ -24,6 +28,10 @@ services:
       context: ./service-analytics/
       dockerfile: Dockerfile
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
     image: omdv/crypto-analytics
@@ -51,6 +59,10 @@ services:
       context: ./service-react-app
       dockerfile: Dockerfile-prod
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role != manager]
       restart_policy:
         condition: on-failure
     image: omdv/crypto-client
@@ -69,6 +81,10 @@ services:
   nginx:
     build: ./service-nginx/
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role != manager]
       restart_policy:
         condition: on-failure
     image: omdv/crypto-nginx
@@ -85,6 +101,10 @@ services:
   redis:
     image: redis:latest
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
     expose:
