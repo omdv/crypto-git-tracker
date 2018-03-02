@@ -16,6 +16,6 @@ RUN set -ex; \
   yarn run build
 
 # serve as static page
-FROM nginx:1.13.5-alpine
+FROM nginx:1.13.9-alpine
 WORKDIR /usr/share/nginx/html
 COPY --from=0 /usr/src/app/build/ /usr/share/nginx/html

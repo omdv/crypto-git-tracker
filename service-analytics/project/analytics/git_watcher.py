@@ -65,7 +65,8 @@ class GitWatcher():
             if last_page:
                 last_page_num = int(re.findall('&page=(\d+)', last_page[0])[0])
             else:
-                last_page_num = int(re.findall('&page=(\d+)', prev_page[0])[0])+1
+                last_page_num =\
+                    int(re.findall('&page=(\d+)', prev_page[0])[0])+1
 
             if next_page:
                 next_page_num = int(re.findall('&page=(\d+)', next_page[0])[0])
@@ -97,7 +98,8 @@ class GitWatcher():
         commits.columns = ['commit_' + s for s in commits.columns]
         df = pd.concat([df.drop(['commit'], axis=1), commits], axis=1)
 
-        date = df['commit_author'].apply(pd.Series)['date'].apply(pd.to_datetime)
+        date = df['commit_author'].apply(pd.Series)['date'].\
+            apply(pd.to_datetime)
         df = pd.concat([df, date], axis=1)
 
         login = df['author'].apply(pd.Series)['login']
@@ -144,7 +146,8 @@ class GitWatcher():
 
             # export to DB
             engine = create_engine(self.DB_URI)
-            df.to_sql(name='commits', con=engine, index=False, if_exists="append")
+            df.to_sql(name='commits', con=engine, index=False,
+                      if_exists="append")
 
         else:
             last_modified = None
@@ -156,7 +159,8 @@ if __name__ == '__main__':
     app_config = {}
     app_config['GIT_USER'] = 'omdv'
     app_config['GIT_TOKEN'] = 'bdbae9884072bba932f755ee370fd85f001a2928'
-    app_config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:postgres@localhost:5435/analytics_dev'
+    app_config['SQLALCHEMY_DATABASE_URI'] =\
+        'postgres://postgres:postgres@localhost:5435/analytics_dev'
 
     engine = create_engine(app_config['SQLALCHEMY_DATABASE_URI'])
     repos = pd.read_sql('control_repos', engine)

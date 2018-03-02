@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set up number of nodes
-num_nodes=6
+num_nodes=4
 
 # create nodes
 for i in `seq 1 $num_nodes`; do docker-machine create --driver digitalocean \
@@ -46,4 +46,4 @@ for i in `seq 1 $num_nodes`; do
 done
 
 # create registry
-docker-machine ssh node-1 'docker service create --name registry --publish published=5000,target=5000 registry:2'
+# docker-machine ssh node-1 'docker service create --name registry --publish published=5000,target=5000 registry:2'

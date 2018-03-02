@@ -9,6 +9,7 @@ app, cel = create_app()
 @cel.task(name='task_summary', base=QueueOnce, once={'graceful': True})
 def task_summary():
     with app.app_context():
+        print("Starting processing task...")
         analyzer = GitAnalytics(app.config)
         df, _, _ = analyzer.summary_table()
         try:

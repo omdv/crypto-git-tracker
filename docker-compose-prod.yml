@@ -36,7 +36,7 @@ services:
       - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
       - SECRET_KEY=${SECRET_KEY}
       - GIT_TOKEN=${GIT_TOKEN}
-      - GIT_USER=omdv
+      - GIT_USER=${GIT_USER}
     depends_on:
       - database
       - redis
@@ -83,7 +83,7 @@ services:
       - cryptosite
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     deploy:
       restart_policy:
         condition: on-failure

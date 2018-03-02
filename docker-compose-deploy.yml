@@ -99,7 +99,7 @@ services:
       - cryptosite
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     deploy:
       mode: replicated
       replicas: 1

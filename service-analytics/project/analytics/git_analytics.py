@@ -2,7 +2,7 @@ import requests
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from sklearn.neighbors import LocalOutlierFactor
+# from sklearn.neighbors import LocalOutlierFactor
 
 # define constants
 DEVELOPER_COMMITS = 5

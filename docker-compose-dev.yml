@@ -70,6 +70,6 @@ services:
 
   redis:
     container_name: redis
-    image: redis:latest
+    image: redis:alpine
     ports:
       - 6379:6379
