@@ -1,0 +1,56 @@
+watcher:
+  name: git-watcher
+  image:
+    repository: omdv
+    container: crypto-git-tracker-watcher
+    tag: latest
+flask:
+  name: flask
+  service:
+    serviceType: ClusterIP
+  container:
+    port: 5000
+  image:
+    repository: omdv
+    container: crypto-git-tracker-flask
+    tag: latest
+  config:
+    project: project.config.DevelopmentConfig
+    database: analytics_dev
+    secretKey: example_key
+  resources:
+    cpu: 100m
+    memory: 128Mi
+pg:
+  name: pgset
+  container:
+    port: 5432
+    name:
+      default: pgset
+      primary: pgset-primary
+      replica: pgset-replica
+    serviceAccount: pgset-sa
+  credentials:
+    pgUser: user
+    pgPassword: password
+    primary: password
+    root: password
+  serviceType: ClusterIP
+  image:
+    repository: crunchydata
+    container: crunchy-postgres
+    tag: centos7-9.6.8-1.8.1
+  pv:
+    storage: 400M
+    name: pgset-pv
+  pvc:
+    name: pgset-pvc
+  resources:
+    cpu: 200m
+    memory: 512Mi
+    persistence:
+      storageClass: standard
+      storageClassType: standard
+      accessModes:
+      - ReadWriteMany
+      size: 100m

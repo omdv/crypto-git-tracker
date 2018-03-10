@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{.Values.pg.container.name.primary}}"
+  labels:
+    name: "{{.Values.pg.container.name.primary}}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+spec:
+  type: "{{.Values.pg.serviceType}}"
+  ports:
+  - protocol: TCP
+    port: {{.Values.pg.container.port}}
+    targetPort: {{.Values.pg.container.port}}
+    nodePort: 0
+  selector:
+    name: "{{.Values.pg.container.name.primary}}"
+  sessionAffinity: None

@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{.Values.flask.name}}"
+  labels:
+    name: "{{.Values.flask.name}}"
+    app: "{{.Values.flask.name}}"
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    "helm.sh/created": {{.Release.Time.Seconds | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: "{{.Values.flask.name}}"
+  serviceName: "{{.Values.flask.name}}"
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "{{.Values.flask.name}}"
+    spec:
+      containers:
+      - name: {{.Values.flask.name}}
+        image: "{{.Values.flask.image.repository}}/{{.Values.flask.image.container}}:{{.Values.flask.image.tag}}"
+        ports:
+        - containerPort: {{.Values.flask.container.port}}
+          name: flask
+        env:
+        - name: APP_SETTINGS
+          value: "{{.Values.flask.config.project}}"
+        - name: DATABASE_TEST_URL
+          value: "postgres://primaryuser:{{.Values.pg.credentials.primary}}@{{.Values.pg.container.name.primary}}:{{.Values.pg.container.port}}/analytics_test"
+        - name: DATABASE_URL
+          value: "postgres://primaryuser:{{.Values.pg.credentials.primary}}@{{.Values.pg.container.name.primary}}:{{.Values.pg.container.port}}/{{.Values.flask.config.database}}"
+        - name: SECRET_KEY
+          value: "{{.Values.flask.config.secretKey}}"
+        resources:
+          requests:
+            cpu: {{ .Values.flask.resources.cpu }}
+            memory: {{ .Values.flask.resources.memory }}

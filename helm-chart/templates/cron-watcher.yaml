@@ -1,0 +1,28 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: "{{.Values.watcher.name}}"
+  labels:
+    name: "{{.Values.watcher.name}}"
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    "helm.sh/created": {{.Release.Time.Seconds | quote }}
+spec:
+  schedule: "*/5 * * * *"
+  scheduleTest: "0 0 31 2 *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{.Values.watcher.name}}
+            image: "{{.Values.watcher.image.repository}}/{{.Values.watcher.image.container}}:{{.Values.watcher.image.tag}}"
+            env:
+            - name: DATABASE_URL
+              value: "postgres://primaryuser:{{.Values.pg.credentials.primary}}@{{.Values.pg.container.name.primary}}:{{.Values.pg.container.port}}/{{.Values.flask.config.database}}"
+            - name: GIT_USER
+              value: omdv
+            - name: GIT_TOKEN
+              value: bdbae9884072bba932f755ee370fd85f001a2928
+          restartPolicy: OnFailure

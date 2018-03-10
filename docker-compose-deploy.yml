@@ -2,19 +2,16 @@ version: '3.3'
 
 services:
   database:
-    build:
-      context: ./service-db
-      dockerfile: Dockerfile
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role != manager]
+        constraints: [node.hostname == node-2]
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-database
-    expose:
-        - 5432
+    image: omdv/crypto-database:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -24,9 +21,6 @@ services:
       - cryptosite
 
   analytics:
-    build:
-      context: ./service-analytics/
-      dockerfile: Dockerfile
     deploy:
       mode: replicated
       replicas: 1
@@ -34,67 +28,51 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-analytics
-    expose:
-      - 5000
-      - 5555
+    image: omdv/crypto-analytics:latest
     environment:
       - APP_SETTINGS=project.config.ProductionConfig
       - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_prod
       - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
       - SECRET_KEY=${SECRET_KEY}
       - GIT_TOKEN=${GIT_TOKEN}
-      - GIT_USER=omdv
+      - GIT_USER=${GIT_USER}
     depends_on:
       - database
       - redis
-    links:
-      - redis
-      - database
     networks:
       - cryptosite
 
   client:
-    build:
-      context: ./service-react-app
-      dockerfile: Dockerfile-prod
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role != manager]
+        constraints: [node.hostname == node-3]
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-client
-    expose:
-      - 80
+    image: omdv/crypto-client:latest
     environment:
       - NODE_ENV=production
       - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
     depends_on:
       - analytics
-    links:
-      - analytics
     networks:
       - cryptosite
 
   nginx:
-    build: ./service-nginx/
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role != manager]
+        constraints: [node.hostname == node-4]
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-nginx
+    image: omdv/crypto-nginx:latest
     ports:
       - 80:80
     depends_on:
       - analytics
       - client
-    links:
-      - analytics
     networks:
       - cryptosite
 
@@ -107,10 +85,11 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    expose:
-      - 6379
     networks:
       - cryptosite
 
 networks:
   cryptosite:
+
+volumes:
+  db-data:

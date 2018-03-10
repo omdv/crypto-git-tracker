@@ -1,0 +1,21 @@
+FROM alpine:3.7
+
+# set working directory
+WORKDIR /usr/src/app
+
+# add requirements (to leverage Docker cache)
+ADD ./requirements.txt /usr/src/app/requirements.txt
+
+# install python and everything for postgres
+RUN apk update && \
+ apk add alpine-sdk && \
+ apk add python3 postgresql-libs && \
+ apk add --virtual .build-deps gcc python3-dev musl-dev postgresql-dev && \
+ python3 -m pip install -r requirements.txt --no-cache-dir && \
+ apk --purge del .build-deps
+
+# add app
+COPY . /usr/src/app
+
+# run task
+CMD python3 git_watcher.py
