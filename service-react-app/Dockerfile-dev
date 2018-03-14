@@ -1,14 +1,13 @@
 FROM node:alpine
 
 # set working directory
-RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 
 # arguments
 ARG REACT_APP_GIT_SERVICE_URL
+ENV REACT_APP_GIT_SERVICE_URL $REACT_APP_GIT_SERVICE_URL
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
-ENV REACT_APP_GIT_SERVICE_URL $REACT_APP_GIT_SERVICE_URL
 
 # add `/usr/src/app/node_modules/.bin` to $PATH
 ENV PATH /usr/src/app/node_modules/.bin:$PATH

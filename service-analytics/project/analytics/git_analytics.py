@@ -18,6 +18,7 @@ class GitAnalytics():
         engine = create_engine(self.DB_URI)
         df = pd.read_sql('commits', engine)
         df.set_index("date", inplace=True)
+        df.drop_duplicates(inplace=True)
         return df
 
     def _download_market_info(self, apihandle):

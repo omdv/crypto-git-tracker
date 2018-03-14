@@ -46,8 +46,8 @@ pg:
   pvc:
     name: pgset-pvc
   resources:
-    cpu: 200m
-    memory: 512Mi
+    cpu: 100m
+    memory: 128Mi
     persistence:
       storageClass: standard
       storageClassType: standard

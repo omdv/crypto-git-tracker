@@ -1,0 +1,2 @@
+docker exec -it $(docker ps -a | grep 'analytics' | head -n1 | awk '{print $NF}') python manage.py recreate_db &&
+docker exec -it $(docker ps -a | grep 'analytics' | head -n1 | awk '{print $NF}') python manage.py add_repos -f coins_list_full

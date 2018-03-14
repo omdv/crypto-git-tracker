@@ -9,6 +9,8 @@ services:
       restart_policy:
         condition: on-failure
     image: omdv/crypto-database
+    volumes:
+      - db-data:/var/lib/postgresql/data
     expose:
         - 5432
     environment:
@@ -91,6 +93,9 @@ services:
       - 6379
     networks:
       - cryptosite
+
+volumes:
+  db-data:
 
 networks:
   cryptosite:

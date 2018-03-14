@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set up number of nodes
-num_nodes=4
+num_nodes=2
 
 # create nodes
 for i in `seq 1 $num_nodes`; do docker-machine create --driver digitalocean \
@@ -47,3 +47,23 @@ done
 
 # create registry
 # docker-machine ssh node-1 'docker service create --name registry --publish published=5000,target=5000 registry:2'
+
+# push built images to docker HUB
+for i in `docker images | grep '^omdv/crypto'| awk '{print $1}'`; do
+    docker push $i
+done
+
+# switch to node-1 and deploy
+eval $(docker-machine env node-1) && \
+export REACT_APP_GIT_SERVICE_URL=$(docker-machine ip node-1) && \
+docker stack deploy -c docker-compose-deploy.yml cryptosite
+
+# initiate a db
+#docker-machine ssh node-1 "docker exec -it $(docker ps -a | grep 'analytics' | head -n1 | awk '{print $NF}') python manage.py recreate_db
+#                           docker exec -it $(docker ps -a | grep 'analytics' | head -n1 | awk '{print $NF}') python manage.py add_repos -f coins_list_full"
+
+
+# kill all nodes
+# for i in `seq 1 $num_nodes`; do
+#     docker-machine rm node-$i
+# done

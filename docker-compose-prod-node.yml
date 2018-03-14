@@ -1,0 +1,82 @@
+version: '3.3'
+
+services:
+  database:
+    image: omdv/crypto-database:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    expose:
+        - 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: exit 0
+    networks:
+      - cryptosite
+
+  analytics:
+    image: omdv/crypto-analytics:latest
+    expose:
+      - 5000
+      - 5555
+    environment:
+      - APP_SETTINGS=project.config.ProductionConfig
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_prod
+      - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
+      - SECRET_KEY=${SECRET_KEY}
+      - GIT_TOKEN=${GIT_TOKEN}
+      - GIT_USER=${GIT_USER}
+    depends_on:
+      - database
+      - redis
+    links:
+      - redis
+      - database
+    networks:
+      - cryptosite
+
+  client:
+    image: omdv/crypto-client:latest
+    expose:
+      - 80
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
+    depends_on:
+      - analytics
+    links:
+      - analytics
+    networks:
+      - cryptosite
+
+  nginx:
+    deploy:
+      restart_policy:
+        condition: on-failure
+    image: omdv/crypto-nginx:latest
+    ports:
+      - 80:80
+    depends_on:
+      - analytics
+      - client
+    links:
+      - analytics
+    networks:
+      - cryptosite
+
+  redis:
+    image: redis:alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    expose:
+      - 6379
+    networks:
+      - cryptosite
+
+volumes:
+  db-data:
+
+networks:
+  cryptosite:
