@@ -2,49 +2,25 @@ version: '3'
 
 services:
   database:
-    image: omdv/crypto-git-tracker-db
     build:
       context: ./service-db
       dockerfile: Dockerfile
+    image: omdv/crypto-database
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
-        - 5435:5432
+        - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     healthcheck:
       test: exit 0
 
-  # analytics:
-  #   image: omdv/dev-crypto-analytics
-  #   build:
-  #     context: ./service-analytics/
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - './service-analytics:/usr/src/app'
-  #   ports:
-  #     - 5001:5000
-  #     - 5555:5555
-  #   environment:
-  #     - APP_SETTINGS=project.config.DevelopmentConfig
-  #     - DATABASE_URL=postgres://postgres:postgres@database:5432/analytics_dev
-  #     - DATABASE_TEST_URL=postgres://postgres:postgres@database:5432/analytics_test
-  #     - SECRET_KEY=${SECRET_KEY}
-  #     - GIT_TOKEN=${GIT_TOKEN}
-  #     - GIT_USER=${GIT_USER}
-  #   depends_on:
-  #     - database
-  #     - redis
-  #   links:
-  #     - redis
-  #     - database
-
-  flask:
-    image: omdv/crypto-git-tracker-dev
+  analytics:
     build:
-      context: ./service-flask/
+      context: ./service-analytics/
       dockerfile: Dockerfile
-    volumes:
-      - './service-flask:/usr/src/app'
+    image: omdv/crypto-analytics
     ports:
       - 5001:5000
       - 5555:5555
@@ -57,37 +33,44 @@ services:
       - GIT_USER=${GIT_USER}
     depends_on:
       - database
+      - redis
+    links:
+      - redis
+      - database
 
-  # client:
-  #   image: omdv/dev-crypto-client
-  #   build:
-  #     context: ./service-react-app
-  #     dockerfile: Dockerfile-dev
-  #   volumes:
-  #     - './service-react-app:/usr/src/app'
-  #   ports:
-  #     - '3007:3000'
-  #   environment:
-  #     - NODE_ENV=development
-  #     - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
-  #   depends_on:
-  #     - analytics
-  #   links:
-  #     - analytics
+  client:
+    image: omdv/dev-crypto-client
+    build:
+      context: ./service-react-app
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './service-react-app:/usr/src/app'
+    ports:
+      - '3007:3000'
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
+    depends_on:
+      - analytics
+    links:
+      - analytics
 
-  # nginx:
-  #   image: omdv/dev-crypto-nginx
-  #   build: ./service-nginx/
-  #   restart: always
-  #   ports:
-  #     - 80:80
-  #   depends_on:
-  #     - analytics
-  #     - client
-  #   links:
-  #     - analytics
+  nginx:
+    image: omdv/dev-crypto-nginx
+    build: ./service-nginx/
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - analytics
+      - client
+    links:
+      - analytics
 
-  # redis:
-  #   image: redis:alpine
-  #   ports:
-  #     - 6379:6379
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
+volumes:
+  db-data:
