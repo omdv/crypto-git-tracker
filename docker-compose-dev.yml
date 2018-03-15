@@ -9,7 +9,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-        - 5432:5432
+      - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -46,7 +46,7 @@ services:
     volumes:
       - './service-react-app:/usr/src/app'
     ports:
-      - '3007:3000'
+      - 3007:3000
     environment:
       - NODE_ENV=development
       - REACT_APP_GIT_SERVICE_URL=${REACT_APP_GIT_SERVICE_URL}
@@ -55,17 +55,17 @@ services:
     links:
       - analytics
 
-  nginx:
-    image: omdv/dev-crypto-nginx
-    build: ./service-nginx/
-    restart: always
-    ports:
-      - 80:80
-    depends_on:
-      - analytics
-      - client
-    links:
-      - analytics
+  # nginx:
+  #   image: omdv/dev-crypto-nginx
+  #   build: ./service-nginx/
+  #   restart: always
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - analytics
+  #     - client
+  #   links:
+  #     - analytics
 
   redis:
     image: redis:alpine

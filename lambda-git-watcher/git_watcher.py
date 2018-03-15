@@ -5,8 +5,7 @@ import pandas as pd
 import datetime as dt
 from requests.auth import HTTPBasicAuth
 from functools import reduce
-from sqlalchemy import create_engine, MetaData, \
-    Table, Column, Integer, DateTime, String
+from sqlalchemy import create_engine, VARCHAR, TIMESTAMP, TEXT
 
 
 class GitWatcher():
@@ -23,7 +22,7 @@ class GitWatcher():
     def set_app_config(self, app_config):
         self.USER = app_config['GIT_USER']
         self.TOKEN = app_config['GIT_TOKEN']
-        self.DB_URI = app_config['SQLALCHEMY_DATABASE_URI']
+        self.DB_URI = app_config['DB_URI']
 
     """
     Aux method to get the rate limit
@@ -148,38 +147,46 @@ class GitWatcher():
 
             # export to DB
             engine = create_engine(self.DB_URI)
-            df.to_sql(name='commits', con=engine, index=False,
-                      if_exists="append")
+            df.to_sql(name='commits',
+                      con=engine, index=False,
+                      if_exists='append',
+                      dtype={'login': VARCHAR(64),
+                             'message': TEXT,
+                             'repo': VARCHAR(64),
+                             'ticker': VARCHAR(16),
+                             'apihandle': VARCHAR(64),
+                             'url': VARCHAR(256),
+                             'date': TIMESTAMP})
 
         else:
-            last_modified = None
+            last_modified = self.last_update
 
         return last_modified
 
 
-if __name__ == '__main__':
+def watcher_task():
     app_config = {}
     app_config['GIT_USER'] = os.environ.get('GIT_USER')
     app_config['GIT_TOKEN'] = os.environ.get('GIT_TOKEN')
     app_config['DB_URI'] = os.environ.get('DB_URI')
 
     engine = create_engine(app_config['DB_URI'])
-
-    table_name = 'control_repos'
-
-    if not engine.dialect.has_table(engine, table_name):
-        metadata = MetaData(engine)
-        Table(table_name, metadata,
-          Column('id', Integer, primary_key=True, nullable=False),
-          Column('ticker', String(128)),
-          Column('apihandle', String(128)),
-          Column('url', String(128)),
-          Column('last_update', DateTime))
-        metadata.create_all()
-
     repos = pd.read_sql('control_repos', engine)
 
-    for _r in repos.values:
+    for (idx, _r) in enumerate(repos.values):
         watcher = GitWatcher(_r[1], _r[2], _r[3], _r[4])
         watcher.set_app_config(app_config)
-        new_date = watcher.download()
+        _n = watcher.download()
+        repos.iloc[idx, repos.columns.get_loc('last_update')] = _n
+
+    repos.to_sql(name='control_repos',
+                 con=engine, index=False,
+                 if_exists='replace',
+                 dtype={'ticker': VARCHAR(16),
+                        'apihandle': VARCHAR(64),
+                        'url': VARCHAR(128),
+                        'last_update': TIMESTAMP})
+
+
+if __name__ == '__main__':
+    watcher_task()
