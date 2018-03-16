@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { scaleOrdinal } from 'd3-scale'
-import { schemeCategory10 } from 'd3-scale-chromatic'
+import scaleOrdinal from 'd3-scale/src/ordinal'
+import schemeCategory10 from 'd3-scale-chromatic/src/categorical/category10'
 
 const legendLineLength = 20
 const textLineHeight = 15

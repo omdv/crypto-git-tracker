@@ -6,9 +6,12 @@ import TimeSeriesChart from '../../components/TimeSeriesChart/chart'
 import ScatterChart from '../../components/ScatterChart/chart'
 
 // React table
-import ReactTable from 'react-table'
+import ReactTable from 'react-table/lib/index'
 import 'react-table/react-table.css'
 import {main_table_columns, main_table_sorting} from '../../definitions/main_table'
+
+// Activity indicators
+import ActivityIndicators from '../../components/ActivityIndicators'
 
 // Home container styles
 import './index.css'
@@ -29,6 +32,8 @@ class Home extends Component {
       devs_data_loading: true,
       summary_table_data: [],
       summary_table_data_loading: true,
+      activity_data: [],
+      activity_data_loading: true,
       selected_coins: new Set([]),
       selected_commits: [
         {'date': new Date(2009, 8, 29)},
@@ -45,6 +50,7 @@ class Home extends Component {
     this.getAndPrepareData()
   }
 
+  // choose 2 and 3 coins for initial graph
   initGraphs() {
     this.handleChange(2)
     this.handleChange(3)
@@ -87,6 +93,17 @@ class Home extends Component {
       this.setState({selected_devs: selected_devs})
     }
 
+    // add indicator to summary_table_data that coins are selected
+    summary_table_data.map((d,i) => {
+      if (selected_coins.has(i)) {
+        d.selected = 1
+      } else {
+        d.selected = 0
+      }
+      return d
+    })
+
+    // update selected coins
     this.setState({selected_coins: selected_coins})
   }
 
@@ -102,16 +119,23 @@ class Home extends Component {
       axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/summary_table`),
       axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/commits`),
       axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/developers`),
+      axios.get(`${process.env.REACT_APP_GIT_SERVICE_URL}/activity_levels`)
     ])
-    .then(axios.spread((r_summary, r_commits, r_devs) => {
+    .then(axios.spread((r_summary, r_commits, r_devs, r_activity) => {
       // process data
       let summary = r_summary.data
       let commits = r_commits.data
       let devs = r_devs.data
+      let activity = r_activity.data
       
       // convert to date
       commits = this.convertToDate(commits)
       devs = this.convertToDate(devs)
+      activity.map((d,i) => {
+        d.max_commits_date = new Date(d.max_commits_date)
+        d.max_devs_date = new Date(d.max_devs_date)
+        return d
+      })
       
       // create sparklines for commits
       let _s_commits = commits.slice(commits.length - SPARKLINE_DAYS)
@@ -125,6 +149,8 @@ class Home extends Component {
         return d['sparkline_devs'] = _s_devs.map(s => s[d.ticker])
       })
 
+      this.setState({ activity_data: activity, activity_data_loading: false})
+
       // export variables
       this.setState(
         { summary_table_data: summary,
@@ -132,7 +158,7 @@ class Home extends Component {
           commits_data: commits,
           commits_data_loading: true,
           devs_data: devs,
-          devs_data_loading: true
+          devs_data_loading: true,
          }, this.initGraphs)
     }))
     .catch((err) => { console.log(err); })
@@ -143,6 +169,8 @@ class Home extends Component {
     const { summary_table_data, summary_table_data_loading } = this.state
     return (
       <div className="container">
+          { !this.state.activity_data_loading && 
+            <ActivityIndicators activity={this.state.activity_data[0]}/> }
         <div className="col-md-12">
           <ReactTable
           data={summary_table_data}

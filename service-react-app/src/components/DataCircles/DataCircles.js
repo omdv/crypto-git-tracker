@@ -31,12 +31,15 @@ export default class DataCircles extends Component {
       const posY = props.scales.yScale(coords[props.yAccessor])
       const ticker = coords['ticker']
       let fill = "rgb(188, 189, 34)"
+      
+      // fill outliers
       if (coords[props.outlierAccessorPos] === 1) {
         fill = "rgb(23, 190, 207)"
       } else if (coords[props.outlierAccessorNeg] === 1) {
         fill = "rgb(214, 39, 40)"
       }
-      const circleProps = {
+
+      let circleProps = {
         cx: posX,
         cy: posY,
         r: 4,
@@ -44,6 +47,12 @@ export default class DataCircles extends Component {
         stroke: "blue",
         fill: fill
       };
+
+      // fill selected
+      if (coords.selected === 1) {
+        circleProps.stroke = "red"
+      }
+
       return <g key={`group-${index}`}
           onMouseOver={this.onItemMouseOver.bind(this, posX, posY, ticker)}
           onMouseOut={this.onItemMouseOut.bind(this)}>

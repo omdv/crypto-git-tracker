@@ -2,7 +2,6 @@ import requests
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-# from sklearn.neighbors import LocalOutlierFactor
 
 # define constants
 DEVELOPER_COMMITS = 5
@@ -92,18 +91,11 @@ class GitAnalytics():
         unique_devs = unique_devs.resample('1W').asfreq().fillna(0)
         unique_devs_ma = unique_devs.rolling(DAILY_DEVS_MA_PERIOD).mean()
 
-        # REMOVED
-        # # last period
-        # _d1 = unique_devs.iloc[-2]
-        # result = self._merger(result, _d1, 'current_devs')
-
-        # # change from day before
-        # _d2 = unique_devs.iloc[-3]
-        # _d2 = (_d1 - _d2) / _d2 * 100
-        # # fix division by zero
-        # _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # _d2.fillna(0, inplace=True)
-        # result = self._merger(result, _d2, 'current_devs_change')
+        # get maximum activity values and current activity
+        unique_devs_mean = unique_devs.mean(axis=1)
+        unique_devs_max_date = unique_devs_mean.idxmax()
+        unique_devs_current =\
+            unique_devs_mean.iloc[-1] / unique_devs_mean.max() * 100
 
         # add days since the launch
         _launch_date = unique_devs.apply(
@@ -132,18 +124,11 @@ class GitAnalytics():
         commits_day_ma = commits_day.rolling(
             DAILY_COMMITS_MA_PERIOD).mean()
 
-        # REMOVED
-        # # today
-        # _d1 = commits_day.iloc[-2]
-        # result = self._merger(result, _d1, 'current_commits')
-
-        # # change from day before
-        # _d2 = commits_day.iloc[-3]
-        # _d2 = (_d1 - _d2) / _d2 * 100
-        # # fix division by zero
-        # _d2.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # _d2.fillna(0, inplace=True)
-        # result = self._merger(result, _d2, 'current_commits_change')
+        # get maximum activity values and current activity
+        commits_mean = commits_day.mean(axis=1)
+        commits_max_date = commits_mean.idxmax()
+        commits_current =\
+            commits_mean.iloc[-1] / commits_mean.max() * 100
 
         # mean number of commits per period since launch
         _mean_commits_day = commits_day.apply(
@@ -173,21 +158,6 @@ class GitAnalytics():
         _rp['repos'] = _rp['repos'].apply(",".join)
         result = pd.merge(result, _rp, how='left', on='ticker')
 
-        # -------------- OUTLIERS --------------
-        # X = result[[
-        #     'mean_commits_period',
-        #     'market_cap']].values
-        # X[:, 1] = np.log1p(X[:, 1])
-        # lof = LocalOutlierFactor().fit(X)
-        # result['lof_outlier_commits'] = lof.fit_predict(X)
-
-        # X = result[[
-        #     'mean_devs_period',
-        #     'market_cap']].values
-        # X[:, 1] = np.log1p(X[:, 1])
-        # lof = LocalOutlierFactor().fit(X)
-        # result['lof_outlier_devs'] = lof.fit_predict(X)
-
         X = result['avg_commits_per_market_cap'].values
         result['commits_ratio_90'] = (X > np.percentile(X, 90)).astype('int')
         result['commits_ratio_10'] = (X < np.percentile(X, 10)).astype('int')
@@ -207,6 +177,14 @@ class GitAnalytics():
 
         result.to_sql(
             'summary_table', engine, index=False, if_exists='replace')
+
+        activity_levels = pd.DataFrame({
+            'max_commits_date': [commits_max_date],
+            'current_commits_level': [commits_current],
+            'max_devs_date': [unique_devs_max_date],
+            'current_devs_level': [unique_devs_current]})
+        activity_levels.to_sql(
+            'activity_levels', engine, index=False, if_exists='replace')
 
         return result, commits_day_ma, unique_devs_ma
 

@@ -14,6 +14,10 @@ TL/DR: List of limitations and assumptions:
 
 We analyze all commits and extract the number of unique contributors per week of activity. We then apply a moving average (16 weeks or 4mo) period to emphasize the trend. We also calculate the percentage of developers who made more than 5 commits. Then the similar calculation is done for commits - we calculate the number of commits per week and use 16-weeks moving average to show the trend.
 
+## Activity Indicators
+
+We average weekly activity levels (commits/week and developers/week) for all tracked cryptocurrencies. The current activity level is the ratio of current week's activity to the highest observed.
+
 ## Table Legend
 
 * Market cap in $MM

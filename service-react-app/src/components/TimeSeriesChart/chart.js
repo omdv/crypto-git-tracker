@@ -9,7 +9,8 @@ import Legend from '../Legend'
 import Labels from '../Labels'
 import ResponsiveWrapper from '../ResponsiveWrapper'
 
-var _ = require('underscore')
+// var _ = require('underscore')
+var pick = require('lodash.pick');
 
 class TimeSeriesChart extends Component {
   constructor() {
@@ -52,7 +53,7 @@ class TimeSeriesChart extends Component {
     // get x and y within try block
     try {
       xReadings = data[dataIdx][xAccessor]
-      yReadings = _.pick(data[dataIdx], categories)
+      yReadings = pick(data[dataIdx], categories)
     }
     catch(err) {
       hoverActive = false

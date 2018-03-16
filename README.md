@@ -28,3 +28,10 @@ Run locally on minikube using `k8-dev.yaml` configuration or using `helm` and he
 
 ## Production
 The whole stack may be deployed on the single instance using `docker-compose-prod` or on multiple instances using docker swarm. The `deploy-swarm.sh` script is to automate deployment to DigitalOcean cluster.
+
+
+## Webpack size optimizations
+create-react-app: 341kB (97.59kB gzip)
+optimized links: 308kB (86.6kB gzip)
+removed numeral: 297kB (82.83kB gzip)
+preact: 265kB (74.72kB gzip) - buggy d3-legend

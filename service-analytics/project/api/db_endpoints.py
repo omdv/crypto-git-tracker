@@ -73,6 +73,22 @@ def get_summary_table():
         return Response(response=None, status=400)
 
 
+@db_blueprint.route('/activity_levels', methods=['GET'])
+def get_actvity_table():
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    try:
+        df = pd.read_sql('activity_levels', engine)
+        resp = Response(
+            response=df.to_json(orient='records'),
+            status=200,
+            mimetype="application/json")
+
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+    except:
+        return Response(response=None, status=400)
+
+
 @db_blueprint.route('/test', methods=['GET'])
 def test_db():
     return "test passed", 200

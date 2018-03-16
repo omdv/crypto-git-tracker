@@ -1,6 +1,6 @@
 import React from 'react'
 import { Sparklines, SparklinesLine } from 'react-sparklines'
-var numeral = require('numeral')
+
 
 export let main_table_columns = [{
     Header: 'Coin',
@@ -9,11 +9,11 @@ export let main_table_columns = [{
   }, {
     Header: 'Market Cap $M',
     accessor: 'market_cap',
-    Cell: props => <p>{numeral(props.value).format('$ 0,0').toUpperCase()}</p>
+    Cell: props => <p>${props.value.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')}</p>
   }, {
     Header: 'Price',
     accessor: 'price',
-    Cell: props => <p>{numeral(props.value).format('$0,0.00').toUpperCase()}</p>,
+    Cell: props => <p>${props.value.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')}</p>,
     maxWidth: 90
   }, {
     Header: 'Age, days',

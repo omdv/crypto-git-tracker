@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { scaleOrdinal } from 'd3-scale'
-import { line } from 'd3-shape'
-import { schemeCategory10 } from 'd3-scale-chromatic'
+import scaleOrdinal from 'd3-scale/src/ordinal'
+import line from 'd3-shape/src/line'
+import schemeCategory10 from 'd3-scale-chromatic/src/categorical/category10'
 
 export default class Lines extends Component {
   constructor(props) {
