@@ -8,7 +8,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-database
+    image: omdv/crypto-database:latest
     volumes:
       - db-data:/var/lib/postgresql/data
     expose:
@@ -28,7 +28,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-analytics
+    image: omdv/crypto-analytics:latest
     expose:
       - 5000
       - 5555
@@ -55,7 +55,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-client
+    image: omdv/crypto-client:latest
     expose:
       - 80
     environment:
@@ -73,7 +73,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    image: omdv/crypto-nginx
+    image: omdv/crypto-nginx:latest
     ports:
       - 80:80
     depends_on:

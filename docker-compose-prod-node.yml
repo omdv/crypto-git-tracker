@@ -2,6 +2,9 @@ version: '3.3'
 
 services:
   database:
+    build:
+      context: ./service-db
+      dockerfile: Dockerfile
     image: omdv/crypto-database:latest
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -16,6 +19,9 @@ services:
       - cryptosite
 
   analytics:
+    build:
+      context: ./service-analytics/
+      dockerfile: Dockerfile
     image: omdv/crypto-analytics:latest
     expose:
       - 5000
@@ -37,6 +43,9 @@ services:
       - cryptosite
 
   client:
+    build:
+      context: ./service-react-app
+      dockerfile: Dockerfile-prod
     image: omdv/crypto-client:latest
     expose:
       - 80
@@ -51,6 +60,7 @@ services:
       - cryptosite
 
   nginx:
+    build: ./service-nginx/
     deploy:
       restart_policy:
         condition: on-failure

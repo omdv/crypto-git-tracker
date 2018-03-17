@@ -1,19 +1,50 @@
+sudo: required
+services:
+  - docker
+
+env:
+  global:
+  - secure: JV4QhIusElJ/6X3ImOddkxSlqx8Gk+y2w/OpxmGWL8nNnB5DlrSFQHKL00QPDLvRPLTVKXFm5M1yf9gRFVijZnkyiXO/Fm9VeUUqSpBBssRa8RYPMvRW4suQ9doiw6ZljE4LOf8OF7F9TrzUkhQoatTdNtbBgxNHlXXaBRTD7lcSwWpj++WSXEQGoK8ZGqM0+FuEcjprwLywGA6I/jV97acWKK5dlObSe9OCQwEG2ur/fbc/QtKfknouJ514bWxAQzObHNOgVVbBb8rPoWBJKjaxd2FZUiLQWFYHuL+7HscIaDoAchQwezuiKpQmKf14/G1srwf6e7iY+PHcIpeJTBXmO3gjwkbRe7h4aFRw8r7tYnW02Z2Ghj0RZRUi7lsnK7P8kEBct/u4I29Yc8MGmOydvIg92chZgkSVSyBxfsV+FvU4d3ZmgwUbVJOzGMLhkgVlOoXww1rqx+bTzmpnRPNSq/G/I3la7Pk5D7q/DgTeomhMh6N5jllapky90qxaEQyJ/ws5AzLfjj7uPlPwJSCSczpQax+Siw6Ke9cfgf3dBO0pkIksI20DsUwTndN3Jf178WGDcD1mPGBY+Fdu2V0KtpK0fRbATK/UOXe2FNkoiXr7zvwnfaZL+JRRpbpyJhBiIBp2E5bZrUvJv07hQyKnuC0wl8t1sei0L2nAA3k=
+  - secure: sIEzbuomknZPYjT2oCi9HGwOccPiD6uLvhXZcSgKLRY91IENDdFzMJ2E5zsjALYev76S+WYA/Eq1gL7NJC5KWJDtZAt+eYgjvXe2RjfcnFYAGudekhNbo6RV85vx/g8TJQ8WgKMRXBqwNl74TU0iBQ6SykdLXvSt3TaKZ/mViLiXvB0eIrIuZxW/yL6ybwcR+SD5vDYxwVj82QfGSkFf172tO/iunqG48xPCuMNKW8RPTTlJfyoc5YGp117PknDROCq3EUrwza0K0XyFNwvayLcqcBROZV5pzz7vXDU7KtJ74QTS5wE+jqMUlDo95djQcODoveX8filEi38gzKZtGz//GbkyajfHg8z/KzIHxqvSRqwjhQ0V9Oslq18H2Wooc+0LoeaWiizu8lRY53+0vWDk5phj0GueCyi8TGCIerC9rvElFrdQtHANf4TZTMFIsrGoygM9e+lpHknwwRgJTGSoF0TIblwO2rvfV1Yfp+IKDyyPBzOzOqWKAPexcGV6MMB16AM4VKjfPXcfolUzHxONaisGbkoq2E9246Hg18CxvHlXYSLKUZkZhgeqgf2SZUAE5tg40sPM3Q4mtTOpbcL5dnLEX2wV5kdauPOoNEQcwL1W9U2rnYq2L1tbCzRX51c88dAq/yT9TWGBXS0Hc/5rLkRhooKhWTOx5NH2wo0=
+  DOCKER_COMPOSE_VERSION: 1.18.0
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+  - docker-compose --version
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+  - docker-compose --version
+
 matrix:
   include:
-    - language: python
-      python: 3.6
-      service:
-        - postgresql
-      before_install:
-        - cd service-analytics
-      install:
-        - pip install -r requirements.txt
-      before_script:
-        - export APP_SETTINGS="project.config.TestingConfig"
-        - export DATABASE_TEST_URL=postgresql://postgres:@localhost/analytics_test
-        - export GIT_USER=omdv
-        - export GIT_TOKEN=bdbae9884072bba932f755ee370fd85f001a2928
-        - psql -c 'create database analytics_test;' -U postgres
-        - python manage.py recreate_db
-      script:
-        - python manage.py test
+  - language: python
+    python: 3.6
+    service:
+    - postgresql
+    before_install:
+    - cd service-analytics
+    install:
+    - pip install -r requirements.txt
+    before_script:
+    - export APP_SETTINGS="project.config.TestingConfig"
+    - export DATABASE_TEST_URL=postgresql://postgres:@localhost/analytics_test
+    - export GIT_USER=omdv
+    - export GIT_TOKEN=bdbae9884072bba932f755ee370fd85f001a2928
+    - psql -c 'create database analytics_test;' -U postgres
+    - python manage.py recreate_db
+    script:
+    - python manage.py test
+
+
+before_deploy:
+  - docker-compose -f docker-compose-prod-node.yml build
+
+  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - docker push omdv/crypto-database:latest
+  - docker push omdv/crypto-analytics:latest
+  - docker push omdv/crypto-client:latest
+  - docker push omdv/crypto-nginx:latest

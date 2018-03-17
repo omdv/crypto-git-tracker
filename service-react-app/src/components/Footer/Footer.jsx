@@ -3,5 +3,5 @@ import './Footer.css'
 
 export default () =>
   <footer className="Footer">
-		<p><a href="https://github.com/omdv/crypto-git-tracker/blob/master/LEGEND.md">What is it about?</a> / <a href="https://github.com/omdv/crypto-git-tracker">Source Code</a></p>
+		<p><a href="https://github.com/omdv/crypto-git-tracker/blob/master/LEGEND.md">About</a> / <a href="https://github.com/omdv/crypto-git-tracker">Source Code</a></p>
   </footer>
