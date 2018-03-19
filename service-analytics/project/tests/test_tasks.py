@@ -34,7 +34,7 @@ def call_watcher_task(repos):
 
 def call_summary_task(app_config):
     analyzer = GitAnalytics(app_config)
-    df, _, _ = analyzer.summary_table()
+    df, _, _, _ = analyzer.summary_table()
     return df
 
 
