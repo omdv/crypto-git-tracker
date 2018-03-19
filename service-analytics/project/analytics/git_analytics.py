@@ -16,8 +16,9 @@ class GitAnalytics():
     def _read_commits(self):
         engine = create_engine(self.DB_URI)
         df = pd.read_sql('commits', engine)
+        df.drop_duplicates(
+            subset=['ticker', 'login', 'date', 'message', 'url'], inplace=True)
         df.set_index("date", inplace=True)
-        df.drop_duplicates(inplace=True)
         return df
 
     def _download_market_info(self, apihandle):
@@ -52,11 +53,6 @@ class GitAnalytics():
         # return none if dataframe is empty
         if df.shape[0] == 0:
             return None, None, None
-
-        # ------------ PREPROCESSING -------------
-        # delete duplicates for coins with multiple repos
-        df.drop_duplicates(
-            subset=['ticker', 'login', 'date', 'message'], inplace=True)
 
         # -------------- DEVELOPERS --------------
         # unique contributors
@@ -96,6 +92,11 @@ class GitAnalytics():
         unique_devs_max_date = unique_devs_mean.idxmax()
         unique_devs_current =\
             unique_devs_mean.iloc[-1] / unique_devs_mean.max() * 100
+        hours_passed =\
+            (pd.datetime.today() - unique_devs_mean.index[-2]) /\
+            np.timedelta64(1, 'h') / 168
+        # normalize by number of elapsed hours
+        unique_devs_current /= hours_passed
 
         # add days since the launch
         _launch_date = unique_devs.apply(
@@ -129,6 +130,8 @@ class GitAnalytics():
         commits_max_date = commits_mean.idxmax()
         commits_current =\
             commits_mean.iloc[-1] / commits_mean.max() * 100
+        # normalize by number of elapsed hours
+        commits_current /= hours_passed
 
         # mean number of commits per period since launch
         _mean_commits_day = commits_day.apply(
@@ -186,12 +189,12 @@ class GitAnalytics():
         activity_levels.to_sql(
             'activity_levels', engine, index=False, if_exists='replace')
 
-        return result, commits_day_ma, unique_devs_ma
+        return result, commits_day_ma, unique_devs_ma, activity_levels
 
 
 if __name__ == '__main__':
     app_config = {}
     app_config['SQLALCHEMY_DATABASE_URI'] =\
-        'postgres://postgres:postgres@localhost:5435/analytics_dev'
+        'postgres://postgres:postgres@192.168.99.104:5432/analytics_dev'
     an = GitAnalytics(app_config)
-    d1, d2, d3 = an.summary_table()
+    d1, d2, d3, d4 = an.summary_table()

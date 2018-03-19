@@ -16,7 +16,7 @@ We analyze all commits and extract the number of unique contributors per week of
 
 ## Activity Indicators
 
-We average weekly activity levels (commits/week and developers/week) for all tracked cryptocurrencies. The current activity level is the ratio of current week's activity to the highest observed.
+We average weekly activity levels (commits/week and developers/week) for all tracked cryptocurrencies. The current activity level is the ratio of current week's activity to the highest observed normalized by the amount of time passed since the beginning of the week.
 
 ## Table Legend
 

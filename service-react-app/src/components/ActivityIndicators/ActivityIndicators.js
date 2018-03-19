@@ -8,11 +8,11 @@ function addDays(date, days) {
 }
 
 const ActivityIndicators = (props) => {
-	const commits_start = props.activity.max_commits_date
-	let commits_end = addDays(commits_start, 7)
+	const commits_end = addDays(props.activity.max_commits_date, 1)
+	const commits_start = addDays(commits_end, -7)
 
-	const devs_start = props.activity.max_devs_date
-	let devs_end = addDays(devs_start, 7)
+	const devs_end = addDays(props.activity.max_devs_date, 1)
+	const devs_start = addDays(devs_end, -7)
 
       return <div className="row">
       <div className="col-md-3">

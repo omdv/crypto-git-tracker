@@ -11,7 +11,7 @@ def task_summary():
     with app.app_context():
         print("Starting processing task...")
         analyzer = GitAnalytics(app.config)
-        df, _, _ = analyzer.summary_table()
+        df, _, _, _ = analyzer.summary_table()
         try:
             print("Processed {} coins".format(df.shape[0]))
         except:

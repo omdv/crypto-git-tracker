@@ -28,7 +28,7 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    TIME_DELTA = 30
+    TIME_DELTA = 120
     CELERYBEAT_SCHEDULE = {
         'watcher': {
             'task': 'task_watcher',
