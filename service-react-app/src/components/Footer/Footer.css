@@ -1,7 +1,12 @@
 .Footer {
-  margin-bottom: 30px;
-  margin-top: 80px;
+  margin-bottom: 20px;
+  margin-top: 30px;
   padding: 0px;
   text-align: center;
   border-top: 1px solid Gainsboro;
+}
+
+.address {
+	font-size: 12px;
+	margin: 0px;
 }

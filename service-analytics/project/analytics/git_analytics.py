@@ -16,8 +16,8 @@ class GitAnalytics():
     def _read_commits(self):
         engine = create_engine(self.DB_URI)
         df = pd.read_sql('commits', engine)
-        df.drop_duplicates(
-            subset=['ticker', 'login', 'date', 'message', 'url'], inplace=True)
+        # df.drop_duplicates(
+        #     subset=['ticker', 'login', 'date', 'message', 'url'], inplace=True)
         df.set_index("date", inplace=True)
         return df
 

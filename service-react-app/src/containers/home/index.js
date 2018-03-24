@@ -44,6 +44,7 @@ class Home extends Component {
         {'date': new Date()}
       ],
     }
+    this.resetCoins = this.resetCoins.bind(this)
   }
   
   componentDidMount() {
@@ -54,6 +55,11 @@ class Home extends Component {
   initGraphs() {
     this.handleChange(2)
     this.handleChange(3)
+  }
+
+  resetCoins = () => {
+    this.setState({selected_coins: new Set([2])},
+    () => this.handleChange(2))
   }
 
   handleChange(idx) {
@@ -191,6 +197,9 @@ class Home extends Component {
             }
           }}
           defaultSorted={main_table_sorting} />
+          <div style={{"textAlign": "right"}}>
+            <p>Selected {this.state.selected_coins.size} of {MAX_SELECTED_COINS}. <a href="#" onClick={this.resetCoins}>Reset</a></p>
+          </div>
         </div>
         <div className="row">
           <div className="col-md-6">
