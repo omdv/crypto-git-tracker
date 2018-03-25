@@ -21,7 +21,6 @@ const SPARKLINE_DAYS = 52
 const MAX_SELECTED_COINS = 5
 const MARGINS = {top: 20, right: 30, bottom: 60, left: 60}
 
-
 class Home extends Component {
   constructor() {
     super()
@@ -51,15 +50,15 @@ class Home extends Component {
     this.getAndPrepareData()
   }
 
-  // choose 2 and 3 coins for initial graph
+  // choose "BTC" and "BCH" for initial graph
   initGraphs() {
-    this.handleChange(2)
-    this.handleChange(3)
+    this.handleChange("BTC")
+    this.handleChange("BCH")
   }
 
   resetCoins = () => {
-    this.setState({selected_coins: new Set([2])},
-    () => this.handleChange(2))
+    this.setState({selected_coins: new Set(["BTC"])},
+    () => this.handleChange("BTC"))
   }
 
   handleChange(idx) {
@@ -69,11 +68,10 @@ class Home extends Component {
     if (selected_coins.has(idx)) {
       selected_coins.delete(idx)
     } else if (selected_coins.size < MAX_SELECTED_COINS) {
-      // TODO: show warning
       selected_coins.add(idx)
     }
 
-    let coins = Array.from(selected_coins).map(e => summary_table_data[e].ticker)
+    let coins = Array.from(selected_coins)
     
     // select commits
     if (commits_data.length > 0) {
@@ -101,7 +99,7 @@ class Home extends Component {
 
     // add indicator to summary_table_data that coins are selected
     summary_table_data.map((d,i) => {
-      if (selected_coins.has(i)) {
+      if (selected_coins.has(d["ticker"])) {
         d.selected = 1
       } else {
         d.selected = 0
@@ -155,6 +153,10 @@ class Home extends Component {
         return d['sparkline_devs'] = _s_devs.map(s => s[d.ticker])
       })
 
+      // sum of commits
+      // summary_table_data.ma
+
+      // export variables
       this.setState({ activity_data: activity, activity_data_loading: false})
 
       // export variables
@@ -178,6 +180,11 @@ class Home extends Component {
           { !this.state.activity_data_loading && 
             <ActivityIndicators activity={this.state.activity_data[0]}/> }
         <div className="col-md-12">
+          <div style={{"textAlign": "right"}}>
+            <p className="note">{"Tracking " + summary_table_data.length + " projects, " +
+            summary_table_data.reduce((s,e) => s+e["number_of_commits"], 0) + " commits, " +
+            summary_table_data.reduce((s,e) => s+e["repos"].split(",").length , 0) + " repos"}</p>
+          </div>
           <ReactTable
           data={summary_table_data}
           columns={main_table_columns}
@@ -189,10 +196,10 @@ class Home extends Component {
           filterable={false}
           getTrProps={(state, rowInfo) => {
             return {
-              onClick: (e) => this.handleChange(rowInfo.index),
+              onClick: (e) => this.handleChange(rowInfo.original.ticker),
               style: {
-                background: rowInfo && (this.state.selected_coins.has(rowInfo.index) ? '#00afec' : 'white'),
-                color: rowInfo && (this.state.selected_coins.has(rowInfo.index) ? 'white' : 'black')
+                background: rowInfo && (this.state.selected_coins.has(rowInfo.original.ticker) ? '#00afec' : 'white'),
+                color: rowInfo && (this.state.selected_coins.has(rowInfo.original.ticker) ? 'white' : 'black')
               }
             }
           }}
@@ -205,8 +212,8 @@ class Home extends Component {
           <div className="col-md-6">
             <TimeSeriesChart
               data={selected_commits}
-              width={400}
-              height={300}
+              width={250}
+              height={250}
               hover_enabled={true}
               legend_enabled={true}
               xAccessor={'date'}
@@ -216,8 +223,8 @@ class Home extends Component {
           <div className="col-md-6">
             <TimeSeriesChart
               data={selected_devs}
-              width={400}
-              height={300}
+              width={250}
+              height={250}
               hover_enabled={true}
               legend_enabled={true}
               xAccessor={'date'}

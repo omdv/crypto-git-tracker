@@ -1,7 +1,7 @@
 # project/api/views.py
 import pandas as pd
 
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, Response
 from flask import current_app as app
 
 from sqlalchemy import create_engine
@@ -74,7 +74,7 @@ def get_summary_table():
 
 
 @db_blueprint.route('/activity_levels', methods=['GET'])
-def get_actvity_table():
+def get_activity_table():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     try:
         df = pd.read_sql('activity_levels', engine)

@@ -1,0 +1,5 @@
+User-agent: * 
+Disallow: /commits
+Disallow: /developers
+Disallow: /summary_table
+Disallow: /activity_levels

@@ -23,7 +23,7 @@ We average weekly activity levels (commits/week and developers/week) for all tra
 * Market cap in $MM
 * Price in $
 * Age of repository since first commit in days
-* Total number of commits
+* Total number of commits (may differ slightly from github number for various reasons)
 * Avg number of commits/week
 * The number above divided by the market cap
 * 16 wks moving average of commits/week

@@ -50,13 +50,25 @@ export default class DataCircles extends Component {
 
       // fill selected
       if (coords.selected === 1) {
-        circleProps.stroke = "red"
+        // circleProps.stroke = "red"
+        // circleProps.r = 6
+        circleProps.selected = true
+      }
+
+      let rectProps = {
+        x: posX,
+        y: posY,
+        height: 8,
+        width: 8,
+        fill: fill,
+        stroke: "blue"
       }
 
       return <g key={`group-${index}`}
           onMouseOver={this.onItemMouseOver.bind(this, posX, posY, ticker)}
           onMouseOut={this.onItemMouseOut.bind(this)}>
-        <circle {...circleProps}/>
+        {!circleProps.selected && <circle {...circleProps}/>}
+        {circleProps.selected && <rect {...rectProps}/>}
         {onHover && <text
           x={hoverX}
           y={hoverY}
