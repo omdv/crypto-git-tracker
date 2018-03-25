@@ -205,7 +205,9 @@ class Home extends Component {
           }}
           defaultSorted={main_table_sorting} />
           <div style={{"textAlign": "right"}}>
-            <p>Selected {this.state.selected_coins.size} of {MAX_SELECTED_COINS}. <a href="#" onClick={this.resetCoins}>Reset</a></p>
+            <p>Selected {this.state.selected_coins.size} of {MAX_SELECTED_COINS}.&nbsp;
+              <span className="button" onClick={this.resetCoins}>Reset</span>
+            </p>
           </div>
         </div>
         <div className="row">

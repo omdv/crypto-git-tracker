@@ -8,3 +8,7 @@
 	font-size: 10px;
 	margin: 0px;
 }
+.button {
+	text-decoration: underline;
+	color: navy;
+}
