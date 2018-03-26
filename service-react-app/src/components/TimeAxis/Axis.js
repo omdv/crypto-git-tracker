@@ -23,7 +23,7 @@ export default class Axis extends Component {
       .tickSize(-this.props.tickSize)
       .tickPadding([12])
       .ticks(timeMonth, 12)
-      .tickFormat(timeFormat("%b-%Y"))
+      .tickFormat(timeFormat("%Y"))
 
     d3Select(this.axisElement).call(axis)
   }

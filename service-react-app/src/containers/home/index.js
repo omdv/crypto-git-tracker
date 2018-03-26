@@ -181,7 +181,7 @@ class Home extends Component {
             <ActivityIndicators activity={this.state.activity_data[0]}/> }
         <div className="col-md-12">
           <div style={{"textAlign": "right"}}>
-            <p className="note">{"Tracking " + summary_table_data.length + " projects, " +
+            <p className="note">{"Tracking " + summary_table_data.length + " coins, " +
             summary_table_data.reduce((s,e) => s+e["number_of_commits"], 0) + " commits, " +
             summary_table_data.reduce((s,e) => s+e["repos"].split(",").length , 0) + " repos"}</p>
           </div>

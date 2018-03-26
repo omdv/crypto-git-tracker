@@ -11,4 +11,5 @@
 .button {
 	text-decoration: underline;
 	color: navy;
+	cursor: pointer;
 }

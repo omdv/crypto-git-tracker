@@ -25,7 +25,7 @@ const ActivityIndicators = (props) => {
       </div>
       <div className="col-md-3">
   			<div className="row">
-  				<p className="activity-label">Most commits on</p>
+  				<p className="activity-label">Max commits on</p>
   			</div>
   			<div className="row">
   				<p className="activity-dates">{commits_start.toLocaleDateString('en-GB',
@@ -36,7 +36,7 @@ const ActivityIndicators = (props) => {
   		</div>
   		<div className="col-md-3">
   			<div className="row">
-  				<p className="activity-label">Most developers on</p>
+  				<p className="activity-label">Max developers on</p>
   			</div>
   			<div className="row">
   				<p className="activity-dates">{devs_start.toLocaleDateString('en-GB',
