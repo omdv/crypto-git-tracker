@@ -110,14 +110,15 @@ class GitAnalytics():
         result = self._merger(result, _mean_devs_period, 'mean_devs_period')
 
         # -------------- COMMITS --------------
+        # dropping similar commits for the same coin
+        df.drop_duplicates(subset=['ticker', 'login', 'date', 'message'],
+                           inplace=True)
         # add commits
         commits = df.groupby(['ticker']).message.count().reset_index()
         result = pd.merge(result, commits, how='left', on='ticker')
         result.rename(columns={'message': 'number_of_commits'}, inplace=True)
 
-        # dropping similar commits for the same coin
-        df.drop_duplicates(subset=['ticker', 'login', 'date', 'message'],
-                           inplace=True)
+
 
         # commits per day
         commits_day = df.groupby([pd.Grouper(freq='W'), 'ticker']).\
