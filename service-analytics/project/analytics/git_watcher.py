@@ -53,7 +53,13 @@ class GitWatcher():
     - last_page_num
     """
     def _parse_header(self, response):
-        last_modified = response.headers['Last-Modified']
+        # print out errors
+        try:
+            last_modified = response.headers['Last-Modified']
+        except:
+            print(response)
+            pass
+
         # if less than 100 items there is no 'Link' in response headers
         if 'Link' in response.headers:
             pages = response.headers['Link'].split(", ")

@@ -118,8 +118,6 @@ class GitAnalytics():
         result = pd.merge(result, commits, how='left', on='ticker')
         result.rename(columns={'message': 'number_of_commits'}, inplace=True)
 
-
-
         # commits per day
         commits_day = df.groupby([pd.Grouper(freq='W'), 'ticker']).\
             count()['login'].unstack().fillna(0)
