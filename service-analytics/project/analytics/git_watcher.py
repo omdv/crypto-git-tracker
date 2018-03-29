@@ -59,8 +59,9 @@ class GitWatcher():
         except:
             print(response.content)
             print(response.headers)
-            print(response.text)
-            last_modified = dt.today()
+            print(response.request)
+            print(response.url)
+            last_modified = -1
             pass
 
         # if less than 100 items there is no 'Link' in response headers
