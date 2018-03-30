@@ -71,7 +71,7 @@ class ProductionConfig(BaseConfig):
     """Production configuration"""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    TIME_DELTA = 180
+    TIME_DELTA = 1800
     CELERYBEAT_SCHEDULE = {
         'watcher': {
             'task': 'task_watcher',

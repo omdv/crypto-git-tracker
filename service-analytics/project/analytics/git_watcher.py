@@ -53,16 +53,7 @@ class GitWatcher():
     - last_page_num
     """
     def _parse_header(self, response):
-        # print out errors
-        try:
-            last_modified = response.headers['Last-Modified']
-        except:
-            print(response.content)
-            print(response.headers)
-            print(response.request)
-            print(response.url)
-            last_modified = -1
-            pass
+        last_modified = response.headers['Last-Modified']
 
         # if less than 100 items there is no 'Link' in response headers
         if 'Link' in response.headers:
@@ -133,7 +124,7 @@ class GitWatcher():
             headers={'If-Modified-Since':
                      self._string_from_datetime(self.last_update)})
 
-        if response.status_code != 304:
+        if (response.status_code != 304) and (response.content != ''):
             response_dataframes = []
 
             # download last page
