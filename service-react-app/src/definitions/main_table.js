@@ -5,7 +5,11 @@ import { Sparklines, SparklinesLine } from 'react-sparklines'
 export let main_table_columns = [{
     Header: 'Coin',
     Cell: ({ row, original }) => <a href={"https://coinmarketcap.com/currencies/"+original.apihandle}>{original.name}</a>,
-    minWidth: 80
+    minWidth: 80,
+    filterable: true,
+    filterMethod: (filter, row) => 
+      row["_original"]["ticker"].toLowerCase().startsWith(filter.value.toLowerCase()) ||
+      row["_original"]["apihandle"].toLowerCase().startsWith(filter.value.toLowerCase())
   }, {
     Header: 'Market Cap $M',
     accessor: 'market_cap',
